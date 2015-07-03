@@ -1,0 +1,5 @@
+**/barn
+ui/bower_components
+node_modules
+config
+nohup*.out

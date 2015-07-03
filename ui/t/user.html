@@ -1,0 +1,19 @@
+<div class="container">
+    <div id="page-wrapper">
+        <h2 class="page-header">Public Profile</h2>
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+        <form ng-submit="submit_profile();">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" class="form-control" ng-model="profile.fullname" name="fullname" placeholder="Your full name" required/>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" ng-model="profile.email" name="email" placeholder="Enter your email address" required/>
+            </div>
+            <input type="submit" class="btn" value="Update"/>
+        </form>
+        
+    </div>
+</div>
+
