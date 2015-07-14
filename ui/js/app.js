@@ -34,6 +34,7 @@ app.factory('jwt', ['appconf', '$cookies', 'jwtHelper', function(appconf, $cooki
 }]);
 */
 
+/*
 //use this service if you want to keep renewing jwt
 app.factory('jwt_refresher', ['appconf', '$http', 'toaster', 'jwtHelper', function(appconf, $http, toaster, jwtHelper) {
     var refresher = setInterval(function() {
@@ -55,20 +56,20 @@ app.factory('jwt_refresher', ['appconf', '$http', 'toaster', 'jwtHelper', functi
     }, 1000*60); //every minutes?
     return refresher;
 }]);
+*/
 
+//show loading bar at the top
 app.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
     cfpLoadingBarProvider.includeSpinner = false;
 }]);
 
 //configure route
-app.config(['$routeProvider', function($routeProvider) {
+app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
     $routeProvider.
     when('/login', {
         templateUrl: 't/login.html',
         controller: 'LoginController'
     })
-    
-    //callback after successful login (take ?jwt= and set it to localstorage)
     .when('/success', {
         templateUrl: 't/empty.html',
         controller: 'SuccessController'
@@ -83,28 +84,39 @@ app.config(['$routeProvider', function($routeProvider) {
     })
     .when('/user', {
         templateUrl: 't/user.html',
-        controller: 'UserController'
+        controller: 'UserController',
+        requiresLogin: true
     })
-   /*
-    when('/admin', {
-        templateUrl: 'admin.html',
-        controller: 'AdminController'
-    }).
-    when('/settings', {
-        templateUrl: 'settings.html',
-        controller: 'SettingsController'
-    }).
-    */
     .otherwise({
-        //TODO - redirect to correct page based on jwt
         redirectTo: '/login'
+    });
+    
+    //console.dir($routeProvider);
+}]).run(['$rootScope', '$location', 'toaster', 'jwtHelper', 'appconf', function($rootScope, $location, toaster, jwtHelper, appconf) {
+    $rootScope.$on("$routeChangeStart", function(event, next, current) {
+        console.log("route changed from "+current+" to :"+next);
+        //redirect to /login if user hasn't authenticated yet
+        if(next.requiresLogin) {
+            var jwt = localStorage.getItem(appconf.jwt_id);
+            if(jwt == null || jwtHelper.isTokenExpired(jwt)) {
+                toaster.warning("Please login first");
+                localStorage.setItem('post_auth_redirect', next.originalPath);
+                $location.path("/login");
+                event.preventDefault();
+            }
+        }
     });
 }]);
 
 //configure httpProvider to send jwt unless skipAuthorization is set in config (not tested yet..)
 app.config(['appconf', '$httpProvider', 'jwtInterceptorProvider', 
 function(appconf, $httpProvider, jwtInterceptorProvider) {
-    jwtInterceptorProvider.tokenGetter = function(config) {
+    jwtInterceptorProvider.tokenGetter = function(jwtHelper, config, $http) {
+
+        //don't send jwt for template requests
+        if (config.url.substr(config.url.length - 5) == '.html') {
+            return null;
+        }
         //if(config.nojwt) return null;
         /*
         if (config.url.indexOf('http://auth0.com') === 0) {
@@ -113,10 +125,28 @@ function(appconf, $httpProvider, jwtInterceptorProvider) {
             return localStorage.getItem('id_token');
         }
         */
-        return localStorage.getItem('jwt');
+        var jwt = localStorage.getItem(appconf.jwt_id);
+        var expdate = jwtHelper.getTokenExpirationDate(jwt);
+        var ttl = expdate - Date.now();
+        if(ttl < 3600*1000) {
+            console.dir(config);
+            console.log("jwt expiring in an hour.. refreshing first");
+            //jwt expring in less than an hour! refresh!
+            return $http({
+                url: appconf.api+'/refresh',
+                skipAuthorization: true,  //prevent infinite recursion
+                headers: {'Authorization': 'Bearer '+jwt},
+                method: 'POST'
+            }).then(function(response) {
+                var jwt = response.data.jwt;
+                //console.log("got renewed jwt:"+jwt);
+                localStorage.setItem(appconf.jwt_id, jwt);
+                return jwt;
+            });
+        }
+        return jwt;
     }
     $httpProvider.interceptors.push('jwtInterceptor');
-
 }]);
 
 

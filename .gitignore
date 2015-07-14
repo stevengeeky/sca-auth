@@ -1,5 +1,6 @@
 **/barn
 ui/bower_components
 node_modules
-config
+config/config.js
+config/auth.key
 nohup*.out

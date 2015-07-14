@@ -10,8 +10,11 @@ var controllers = angular.module('authControllers', [
     'ui.bootstrap',
 ]);
 
-controllers.controller('LoginController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies) {
+controllers.controller('LoginController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', 
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams) {
+
+    var $redirect = $routeParams.redirect ? $routeParams.redirect : "#/user";
+    localStorage.setItem('post_auth_redirect', $redirect);
 
     $scope.title = appconf.title;
     $scope.logo_400_url = appconf.logo_400_url;
@@ -29,11 +32,20 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies) {
         //console.dir($scope.userpass);
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
-            alert('probably never reach here');
+            //TODO - handle success?
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
         }); 
+    }
+
+    $scope.begin_iucas = function() {
+        //var casurl = document.location.origin+document.location.pathname;
+        var casurl = appconf.api+'/iucas';
+        //$cookies.put("casurl", casurl, {domain: ''}); //TODO -- will this break the security model?
+
+        //IU cas doesn't let us login via Ajax...
+        document.location = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+casurl;
     }
 
     $scope.test = function() {
@@ -58,24 +70,6 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies) {
             }
         }
         console.log('Query variable %s not found', variable);
-    }
-    /*
-    var ticket = getQueryVariable('casticket');
-    if(ticket) {
-        var casurl = document.location.origin+document.location.pathname;
-        $http.jsonp("https://cas.iu.edu/cas/validate?cassvc=IU&casticket="+ticket+"&casurl="+casurl)
-        .success(function(data, status, headers, config) {
-            console.dir(data);
-        })
-    }
-    */
-    $scope.begin_iucas = function() {
-        //var casurl = document.location.origin+document.location.pathname;
-        var casurl = appconf.api+'/iucas';
-        //$cookies.put("casurl", casurl, {domain: ''}); //TODO -- will this break the security model?
-
-        //IU cas doesn't let us login via Ajax...
-        document.location = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+casurl;
     }
 }]);
 
@@ -108,15 +102,17 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 }]);
 
-controllers.controller('UserController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', 'jwt_refresher',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, jwt_refresher) {
+controllers.controller('UserController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', //'jwt_refresher',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies/*, jwt_refresher*/) {
     $scope.profile = null; //to be loaded later
     $http.get(appconf.api+'/user/profile')
     .success(function(profile, status, headers, config) {
         $scope.profile = profile;
     })
     .error(function(data, status, headers, config) {
-        toaster.error(data.message);
+        if(data && data.message) {
+            toaster.error(data.message);
+        }
     }); 
     $scope.submit_profile = function() {
         $http.post(appconf.api+'/user/profile', $scope.profile)
@@ -129,18 +125,32 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, jwt_refre
     }
 }]);
 
-controllers.controller('SuccessController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$cookies',
-function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $cookies) {
+//only used by iucas? if so, I should change the name. if not, I should make this a service
+controllers.controller('SuccessController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$location', '$window',
+function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $location, $window) {
     //var exp_date = jwtHelper.getTokenExpirationDate(token);
-    localStorage.setItem(appconf.jwt_id, $routeParams.jwt);
-    //var token = jwtHelper.decodeToken($routeParams.jwt);
-    toaster.success('Welcome!');
-    //console.dir(token);
+    if($routeParams.jwt) {
+        console.log("received jwt:"+$routeParams.jwt);
+        localStorage.setItem(appconf.jwt_id, $routeParams.jwt);
+        $location.search('jwt', null); //remove jwt from url (just to hide it from the user..)
+        //var token = jwtHelper.decodeToken($routeParams.jwt);
+        //console.dir(token);
+    }
     
     //TODO redirect to ?redirect URL if set by client
-    document.location="#/user";
+    var redirect = localStorage.getItem('post_auth_redirect');
+    if(redirect) {
+        console.log("redirecting to "+redirect);
+        localStorage.removeItem('post_auth_redirect');
+        //$location.path(redirect); //this won't work for external redirect?
+        //document.location=redirect; //but I think this won't work for internal?
+        //$location.url(redirect); //doesn't work either
+        $window.location.href = redirect;
+    } /*else {
+        toaster.success('Login Success!');
+        $location.path("/user");
+    }*/
 }]);
-
 
 /*
 controllers.controller('TopmenuController', ['$scope', 'appconf', 

@@ -20,7 +20,6 @@ var user = require('./routes/user');
 var User = require('./models/user').User;
 
 //var route_iucas = require('./routes/iucas');
-
 //var saml = require('passport-saml');
 
 var config = require('./config/config').config;
@@ -43,31 +42,6 @@ app.use(bodyParser.urlencoded({ extended: false})); //parse application/x-www-fo
 
 app.use(cookieParser());
 app.use(jwt_helper.tokenParser());
-
-/*
-//pass url_base from nginx to view to be used as url_base
-app.use(function(req, res, next) {
-    //console.dir(req.headers);
-    res.locals.url_base = config.path_prefix;
-    next();
-});
-*/
-
-//TODO - I need to make this not throw 401 if I don't have token set yet..
-/*
-app.use(jwt({
-    secret: fs.readFileSync('./config/auth.pub'),
-    requestProperty: 'jwt',
-    getToken: function(req) {
-        if(req.cookies && req.cookies.token) {
-            //console.log("token set to "+req.cookies.token);
-            return req.cookies.token;
-        }
-        return null;
-    }
-}));
-*/
-
 app.use(passport.initialize());//needed for express-based application
 
 app.use('/local', local);
@@ -83,7 +57,7 @@ app.get('/verify', jwt({secret: publicKey}), function(req, res) {
 });
 
 //refresh jwt - as long as it hasn't expired, etc..
-app.get('/refresh', jwt({secret: publicKey}), function(req, res) {
+app.post('/refresh', jwt({secret: publicKey}), function(req, res) {
     User.findOne({_id: req.user.sub}, function (err, user) {
         //return res.send(500, new Error("test"));
 
