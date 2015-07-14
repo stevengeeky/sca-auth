@@ -27,22 +27,14 @@ router.post('/auth', function(req, res, next) {
     //console.dir(req.body);
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
+        /*
         if (!user) { 
-            res.status("404"); //should I return 401 Unauthorized?
-            return res.json(info);
+            return next(info);
         }
+        */
         var claim = jwt_helper.createClaim(user);
         var jwt = jwt_helper.signJwt(claim);
-        //console.dir(claim);
-        //jwt_helper.setJwtCookies(claim, res);
-        //return res.json({profile: user.profile, scopes: user.scopes});
-        return res.json({access_token: jwt});
-        /*
-        req.logIn(user, function(err) {
-            if (err) { return next(err); }
-            return res.json(info);
-        });
-        */
+        return res.json({message: "Login Success!", jwt: jwt});
     })(req, res, next);
 });
 

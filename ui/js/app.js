@@ -112,20 +112,12 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
 app.config(['appconf', '$httpProvider', 'jwtInterceptorProvider', 
 function(appconf, $httpProvider, jwtInterceptorProvider) {
     jwtInterceptorProvider.tokenGetter = function(jwtHelper, config, $http) {
-
         //don't send jwt for template requests
         if (config.url.substr(config.url.length - 5) == '.html') {
             return null;
         }
-        //if(config.nojwt) return null;
-        /*
-        if (config.url.indexOf('http://auth0.com') === 0) {
-            return localStorage.getItem('auth0.id_token');
-        } else {
-            return localStorage.getItem('id_token');
-        }
-        */
         var jwt = localStorage.getItem(appconf.jwt_id);
+        if(!jwt) return null; //not jwt
         var expdate = jwtHelper.getTokenExpirationDate(jwt);
         var ttl = expdate - Date.now();
         if(ttl < 3600*1000) {

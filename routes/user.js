@@ -20,7 +20,7 @@ router.get('/profile', jwt({secret: publicKey}), function(req, res, next) {
     //var email = req.query.email;
     User.findOne({_id: req.user.sub}, function (err, user) {
         if (err) { return done(err); }
-        res.json(user.profile);
+        res.json({email: user.local.email, profile: user.profile});
     });
 })
 
@@ -30,14 +30,24 @@ router.post('/profile', jwt({secret: publicKey}), function(req, res, next) {
         return res.send(401, {message: "Unauthorized"});
     }
     User.findOne({_id: req.user.sub}, function (err, user) {
-        if (err) { return done(err); }
+        if (err) { return next(err); }
         //console.dir(user.profile);
         //console.dir(req.body);
-        user.profile.email = req.body.email;
-        user.profile.fullname = req.body.fullname;
+        
+        //email address updated?
+        if(req.body.email != user.local.email) {
+            console.log("user changed email address to "+req.body.email);
+            //TODO - check for uniqueness (enforced via db)
+            user.local.email = req.body.email;
+            user.local.email_confirmed = false;
+        }
+
+        user.profile.fullname = req.body.profile.fullname;
+        user.profile.nickname = req.body.profile.nickname;
+        console.dir(user);
         user.save(function(err) {
-            if(err) return res.send(500, err);
-            res.json({message: "update"});
+            if(err) return next(err); //res.send(500, err);
+            res.json({message: "Updated!"});
         });
     });
 });

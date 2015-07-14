@@ -2,16 +2,20 @@
     <div id="page-wrapper">
         <h1 class="page-header">Register</h1>
         <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
-        <form ng-submit="submit_username();">
+        <form ng-submit="submit();">
             <div class="form-group">
-                <label for="exampleInputEmail1">Username</label>
-                <input type="text" class="form-control" ng-model="useremail.username" name="username" placeholder="Pick a username" required/>
+                <label>Username</label>
+                <input type="text" class="form-control" ng-model="form.username" name="username" placeholder="Pick a username" required/>
             </div>
             <div class="form-group">
-                <label for="exampleInputEmail1">Email</label>
-                <input type="email" class="form-control" ng-model="useremail.email" name="email" placeholder="Enter your email address" required/>
+                <label>Email</label>
+                <input type="email" class="form-control" ng-model="form.email" name="email" placeholder="Enter your email address" required/>
             </div>
-            <input type="submit" class="btn btn-lg" value="Next"/>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" ng-model="form.password" name="password" placeholder="Pick your password" required/>
+            </div>
+            <input type="submit" class="btn btn-lg" value="Submit"/>
         </form>
     </div>
 </div>

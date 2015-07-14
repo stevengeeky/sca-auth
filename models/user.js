@@ -6,22 +6,22 @@ var userSchema = mongoose.Schema({
 
     //for local authentication
     local: {
-        username: String,
+        username: { type: String, index: {unique: true} }, 
         password_hash: String, //bcrypt-ed password
+
+        email: { type: String, index: {unique: true} },  //email needs to be unique 
+        email_confirmed: { type: Boolean, default: false }
     },
 
     //for iucas authentication
     iucas: {
-        id: String, //IU ID
+        id: { type: String, index: {unique: true} } //IU ID
     },
 
     //user profile
     profile: {
         fullname: String,
-        nickname: String, //usually user's first name.. just to show in various places
-
-        email: String,
-        email_confirmed: { type: Boolean, default: false },
+        nickname: String //usually user's first name.. just to show in various places
     },
 
     /* -- going to move this to a separate collection (or even a separate service?)
@@ -38,7 +38,7 @@ var userSchema = mongoose.Schema({
     */
 
     login_date: Date, //date when the user last logged in
-    signup_date: Date, //date when the user signed up
+    signup_date: { type: Date, default: Date.now }, //date when the user signed up
 
     //user account can be deactivated (temporarily?) by administrator
     active: { type: Boolean, default: true },
@@ -67,7 +67,7 @@ userSchema.methods.setPassword = function(password, cb) {
         //console.dir(salt);
         bcrypt.hash(password, salt, function(err, hash) {
             if(err) return cb(err);
-            console.log(hash);
+            //console.log(hash);
             rec.local.password_hash = hash;
             cb(null);
         });

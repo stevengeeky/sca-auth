@@ -60,7 +60,6 @@ app.get('/verify', jwt({secret: publicKey}), function(req, res) {
 app.post('/refresh', jwt({secret: publicKey}), function(req, res) {
     User.findOne({_id: req.user.sub}, function (err, user) {
         //return res.send(500, new Error("test"));
-
         if (err) { return res.send(500, err); }
         var claim = jwt_helper.createClaim(user);
         var jwt = jwt_helper.signJwt(claim);
@@ -180,10 +179,11 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    console.dir(req.headers.authorization);
+    //console.dir(req.headers.authorization);
+    //console.error("error handler invoked");
     console.dir(err);
     res.status(err.status || 500);
-    res.json(err);
+    res.json({message: err.message});
 });
 
 module.exports = app;

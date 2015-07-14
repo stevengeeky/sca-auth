@@ -10,9 +10,8 @@ var controllers = angular.module('authControllers', [
     'ui.bootstrap',
 ]);
 
-controllers.controller('LoginController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', 
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams) {
-
+controllers.controller('LoginController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location) {
     var $redirect = $routeParams.redirect ? $routeParams.redirect : "#/user";
     localStorage.setItem('post_auth_redirect', $redirect);
 
@@ -27,12 +26,31 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     //toaster.success('title', 'Hello there');
     //toaster.error('title', 'Hello there');
 
+    var jwt = localStorage.getItem(appconf.jwt_id);
+    if(jwt != null && !jwtHelper.isTokenExpired(jwt)) {
+        toaster.pop('note', 'You are already logged in');
+        //DEBUG
+        var token = jwtHelper.decodeToken(jwt);
+        console.log(token);
+    }
+
+    //sometime we get error messages via cookie (like iucas registration failurer)
+    var messages = $cookies.get("messages");
+    if(messages) {
+        JSON.parse(messages).forEach(function(message) {
+            toaster.pop(message.type, message.title, message.message);
+        });
+        $cookies.remove("messages", {path: "/"}); //TODO - without path, it tries to remove cookie under /auth path not find it
+    }
+
     $scope.userpass = {};
-    $scope.submit_userpass = function() {
+    $scope.submit = function() {
         //console.dir($scope.userpass);
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
-            //TODO - handle success?
+            toaster.success(data.message);
+            localStorage.setItem(appconf.jwt_id, data.jwt);
+            $location.path("/user");
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
@@ -73,10 +91,11 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 }]);
 
-controllers.controller('RegisterController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams) {
+controllers.controller('RegisterController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location) {
     $scope.alerts = [];
 
+    /*
     if($routeParams.register_token) {
         var tokenPayload = jwtHelper.decodeToken($routeParams.register_token);
         //console.dir(tokenPayload);
@@ -84,16 +103,24 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
             $scope.alerts.push({type: 'info', msg: 'Looks like this is your first time logging in with your IU CAS ID. Please register your username and password in order to setup your new account.'});
         }
     }
+    */
 
-    $scope.useremail = {};
-    $scope.submit_username = function() {
-        $http.get(appconf.api+'/register/is_user_name_exist', {params: $scope.useremail})
+    //stores form
+    $scope.form = {};
+
+    $scope.submit = function() {
+        $http.post(appconf.api+'/register', $scope.form)
         .success(function(data, status, headers, config) {
+            /*
             if(data.exist) {
                 $scope.alerts.push({type: 'warning', msg: 'The username specified is already registered. Please try a different username, or if you have already registered, please login first.'});
             } else {
                 //TODO 
             }
+            */
+            toaster.success(data.message);
+            localStorage.setItem(appconf.jwt_id, data.jwt);
+            $location.path("/user");
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
@@ -104,10 +131,12 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
 
 controllers.controller('UserController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', //'jwt_refresher',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies/*, jwt_refresher*/) {
-    $scope.profile = null; //to be loaded later
+    $scope.form_profile  = null; //to be loaded later
+
     $http.get(appconf.api+'/user/profile')
     .success(function(profile, status, headers, config) {
-        $scope.profile = profile;
+        //console.dir(profile);
+        $scope.form_profile  = profile;
     })
     .error(function(data, status, headers, config) {
         if(data && data.message) {
@@ -115,9 +144,9 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies/*, jwt_ref
         }
     }); 
     $scope.submit_profile = function() {
-        $http.post(appconf.api+'/user/profile', $scope.profile)
+        $http.post(appconf.api+'/user/profile', $scope.form_profile)
         .success(function(data, status, headers, config) {
-            toaster.success("Profile Updated!");
+            toaster.success(data.message);
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
