@@ -34,6 +34,29 @@ app.factory('jwt', ['appconf', '$cookies', 'jwtHelper', function(appconf, $cooki
 }]);
 */
 
+app.factory('redirector', ['$location', '$routeParams', function($location, $routeParams) {
+    if($routeParams.redirect) {
+        localStorage.setItem('post_auth_redirect', $routeParams.redirect);
+    }
+    return {
+        //redirect to specified url
+        //returns true if redirecting out of the page
+        go: function() {
+            var redirect = localStorage.getItem('post_auth_redirect');
+            if(redirect) {
+                console.log("redirecting to "+redirect);
+                localStorage.removeItem('post_auth_redirect');
+                document.location = redirect;
+                return true;
+            } else {
+                console.log("no post_auth_redirect set.. doing to /user");
+                $location.path("/user")
+                return false;
+            }
+        }
+    }
+}]);
+
 /*
 //use this service if you want to keep renewing jwt
 app.factory('jwt_refresher', ['appconf', '$http', 'toaster', 'jwtHelper', function(appconf, $http, toaster, jwtHelper) {
@@ -120,7 +143,10 @@ function(appconf, $httpProvider, jwtInterceptorProvider) {
         if(!jwt) return null; //not jwt
         var expdate = jwtHelper.getTokenExpirationDate(jwt);
         var ttl = expdate - Date.now();
-        if(ttl < 3600*1000) {
+        if(ttl < 0) {
+            console.log("jwt expired");
+            return null;
+        } else if(ttl < 3600*1000) {
             console.dir(config);
             console.log("jwt expiring in an hour.. refreshing first");
             //jwt expring in less than an hour! refresh!

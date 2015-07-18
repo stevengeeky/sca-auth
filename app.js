@@ -67,6 +67,11 @@ app.post('/refresh', jwt({secret: publicKey}), function(req, res) {
     });
 });
 
+app.get('/health', function(req, res) {
+    res.json({status: 'ok'});
+});
+
+
 //auth routes (main login form, registeration, confirmation, etc..)
 //app.use(config.path_prefix+'/', route_index);
 

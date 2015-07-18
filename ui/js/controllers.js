@@ -10,10 +10,11 @@ var controllers = angular.module('authControllers', [
     'ui.bootstrap',
 ]);
 
-controllers.controller('LoginController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location) {
-    var $redirect = $routeParams.redirect ? $routeParams.redirect : "#/user";
-    localStorage.setItem('post_auth_redirect', $redirect);
+controllers.controller('LoginController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+
+    //var $redirect = $routeParams.redirect ? $routeParams.redirect : "#/user";
+    //allow caller to specify redirect url via ?redirect param
 
     $scope.title = appconf.title;
     $scope.logo_400_url = appconf.logo_400_url;
@@ -48,9 +49,11 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
         //console.dir($scope.userpass);
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
-            toaster.success(data.message);
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            $location.path("/user");
+            //$location.path("/user");
+            if(!redirector.go()) {
+                toaster.success(data.message);
+            }
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
@@ -91,8 +94,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 }]);
 
-controllers.controller('RegisterController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location) {
+controllers.controller('RegisterController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
     $scope.alerts = [];
 
     /*
@@ -118,9 +121,10 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
                 //TODO 
             }
             */
-            toaster.success(data.message);
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            $location.path("/user");
+            if(!redirector.go()) {
+                toaster.success(data.message);
+            }
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
@@ -155,8 +159,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies/*, jwt_ref
 }]);
 
 //only used by iucas? if so, I should change the name. if not, I should make this a service
-controllers.controller('SuccessController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$location', '$window',
-function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $location, $window) {
+controllers.controller('SuccessController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$location', '$window', 'redirector', 
+function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $location, $window, redirector) {
     //var exp_date = jwtHelper.getTokenExpirationDate(token);
     if($routeParams.jwt) {
         console.log("received jwt:"+$routeParams.jwt);
@@ -165,20 +169,8 @@ function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $loca
         //var token = jwtHelper.decodeToken($routeParams.jwt);
         //console.dir(token);
     }
-    
-    //TODO redirect to ?redirect URL if set by client
-    var redirect = localStorage.getItem('post_auth_redirect');
-    if(redirect) {
-        console.log("redirecting to "+redirect);
-        localStorage.removeItem('post_auth_redirect');
-        //$location.path(redirect); //this won't work for external redirect?
-        //document.location=redirect; //but I think this won't work for internal?
-        //$location.url(redirect); //doesn't work either
-        $window.location.href = redirect;
-    } /*else {
-        toaster.success('Login Success!');
-        $location.path("/user");
-    }*/
+    redirector.go();
+    //console.log("success");
 }]);
 
 /*
