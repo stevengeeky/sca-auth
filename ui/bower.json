@@ -1,6 +1,6 @@
 {
-  "name": "auth",
-  "version": "0.0.0",
+  "name": "sca-auth",
+  "version": "0.0.1",
   "authors": [
     "Soichi Hayashi <hayashis@iu.edu>"
   ],
@@ -8,6 +8,7 @@
   "ignore": [
     "**/.*",
     "bower_components",
+    "api",
     "barn"
   ],
   "dependencies": {
