@@ -34,7 +34,9 @@ app.factory('jwt', ['appconf', '$cookies', 'jwtHelper', function(appconf, $cooki
 }]);
 */
 
-app.factory('redirector', ['$location', '$routeParams', function($location, $routeParams) {
+//redirecto to whevever user needs to go after auccessful login
+app.factory('redirector', ['$location', '$routeParams', 'appconf', 
+function($location, $routeParams, appconf) {
     if($routeParams.redirect) {
         localStorage.setItem('post_auth_redirect', $routeParams.redirect);
     }
@@ -46,11 +48,12 @@ app.factory('redirector', ['$location', '$routeParams', function($location, $rou
             if(redirect) {
                 console.log("redirecting to "+redirect);
                 localStorage.removeItem('post_auth_redirect');
-                document.location = redirect;
+                window.location = redirect;
                 return true;
             } else {
-                console.log("no post_auth_redirect set.. doing to /user");
-                $location.path("/user")
+                console.log("no post_auth_redirect set.. using default_redirect_url:"+appconf.default_redirect_url);
+                //$location.path("/user")
+                window.location = appconf.default_redirect_url;
                 return false;
             }
         }
@@ -93,6 +96,12 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         templateUrl: 't/login.html',
         controller: 'LoginController'
     })
+    /*
+    .when('/iucas-success', {
+        templateUrl: 't/empty.html',
+        controller: 'IUCASuccessController'
+    })
+    */
     .when('/success', {
         templateUrl: 't/empty.html',
         controller: 'SuccessController'

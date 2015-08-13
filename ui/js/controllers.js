@@ -39,7 +39,17 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     var messages = $cookies.get("messages");
     if(messages) {
         JSON.parse(messages).forEach(function(message) {
-            toaster.pop(message.type, message.title, message.message);
+            if(message.type == "error") {
+                //make it sticky (show close button and no-timeout)
+                toaster.pop({
+                    type: message.type, 
+                    title: message.title, 
+                    body: message.message, 
+                    showCloseButton: true, timeout: 0
+                });
+            } else {
+                toaster.pop(message.type, message.title, message.message);
+            }
         });
         $cookies.remove("messages", {path: "/"}); //TODO - without path, it tries to remove cookie under /auth path not find it
     }
@@ -50,7 +60,6 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            //$location.path("/user");
             if(!redirector.go()) {
                 toaster.success(data.message);
             }
@@ -61,12 +70,15 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 
     $scope.begin_iucas = function() {
-        //var casurl = document.location.origin+document.location.pathname;
-        var casurl = appconf.api+'/iucas';
-        //$cookies.put("casurl", casurl, {domain: ''}); //TODO -- will this break the security model?
-
         //IU cas doesn't let us login via Ajax...
-        document.location = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+casurl;
+        var casurl = appconf.api+'/iucas';
+        window.location = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+casurl;
+        /*
+        //var url = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+encodeURIComponent(window.location+'#/iucas-success');
+        var url = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+encodeURIComponent(document.location+'#/iucas-next');
+        console.log("redirecting to "+url);
+        window.location = url;
+        */
     }
 
     $scope.test = function() {
@@ -98,59 +110,16 @@ controllers.controller('RegisterController', ['$scope', 'appconf', '$route', 'to
 function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
     $scope.alerts = [];
 
-    /*
-    if($routeParams.register_token) {
-        var tokenPayload = jwtHelper.decodeToken($routeParams.register_token);
-        //console.dir(tokenPayload);
-        if(tokenPayload.casid) {
-            $scope.alerts.push({type: 'info', msg: 'Looks like this is your first time logging in with your IU CAS ID. Please register your username and password in order to setup your new account.'});
-        }
-    }
-    */
-
     //stores form
     $scope.form = {};
 
     $scope.submit = function() {
         $http.post(appconf.api+'/register', $scope.form)
         .success(function(data, status, headers, config) {
-            /*
-            if(data.exist) {
-                $scope.alerts.push({type: 'warning', msg: 'The username specified is already registered. Please try a different username, or if you have already registered, please login first.'});
-            } else {
-                //TODO 
-            }
-            */
             localStorage.setItem(appconf.jwt_id, data.jwt);
             if(!redirector.go()) {
                 toaster.success(data.message);
             }
-        })
-        .error(function(data, status, headers, config) {
-            toaster.error(data.message);
-        });         
-        //console.dir($scope.useremail);
-    }
-}]);
-
-controllers.controller('UserController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', //'jwt_refresher',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies/*, jwt_refresher*/) {
-    $scope.form_profile  = null; //to be loaded later
-
-    $http.get(appconf.api+'/user/profile')
-    .success(function(profile, status, headers, config) {
-        //console.dir(profile);
-        $scope.form_profile  = profile;
-    })
-    .error(function(data, status, headers, config) {
-        if(data && data.message) {
-            toaster.error(data.message);
-        }
-    }); 
-    $scope.submit_profile = function() {
-        $http.post(appconf.api+'/user/profile', $scope.form_profile)
-        .success(function(data, status, headers, config) {
-            toaster.success(data.message);
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
@@ -161,34 +130,20 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies/*, jwt_ref
 //only used by iucas? if so, I should change the name. if not, I should make this a service
 controllers.controller('SuccessController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$location', '$window', 'redirector', 
 function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $location, $window, redirector) {
-    //var exp_date = jwtHelper.getTokenExpirationDate(token);
     if($routeParams.jwt) {
         console.log("received jwt:"+$routeParams.jwt);
         localStorage.setItem(appconf.jwt_id, $routeParams.jwt);
-        $location.search('jwt', null); //remove jwt from url (just to hide it from the user..)
-        //var token = jwtHelper.decodeToken($routeParams.jwt);
-        //console.dir(token);
+        //no need to do this because we are directing to somewhere else anyway
+        //also, modifying the $location.search causes this controller to fire twice.
+        //$location.search('jwt', null); //remove jwt from url (just to hide it from the user..)
     }
     redirector.go();
-    //console.log("success");
 }]);
 
 /*
-controllers.controller('TopmenuController', ['$scope', 'appconf', 
-function($scope, appconf, jwt, $route) {
-    $scope.title = appconf.title;
-    //TODO - load stuff from various services (like auth)
-}]);
-
-controllers.controller('NavController', ['$scope', 'appconf', 'jwt', '$route',
-function($scope, appconf, jwt, $route) {
-    var menu = [];
-    menu.push({label: "Search", url: "#/search"});
-    menu.push({label: "Visualize", url: "#/visualize"});
-    menu.push({label: "Settings", url: "#/settings"});
-    menu.push({label: "Admin", url: "#/admin"});
-    $scope.menu = menu;
+controllers.controller('IUCASSuccessController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+    console.log("IUCASSuccess");
+    console.dir($routeParams);
 }]);
 */
-
-

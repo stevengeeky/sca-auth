@@ -6,16 +6,16 @@ var uuid = require('node-uuid');
 var config = require('./config/config').config;
 var service_name = "auth";
 
-var jwt_publickey = fs.readFileSync('./config/auth.pub', {encoding: 'ascii'});
-var jwt_privatekey = fs.readFileSync('./config/auth.key', {encoding: 'ascii'});
+//var jwt_publickey = fs.readFileSync('./config/auth.pub', {encoding: 'ascii'});
+//var jwt_privatekey = fs.readFileSync('./config/auth.key', {encoding: 'ascii'});
 
 exports.createClaim = function(user) {
     return {
-        "iss": config.jwt.iss,
-        "exp": (Date.now() + config.jwt.ttl)/1000,
+        "iss": config.iss,
+        "exp": (Date.now() + config.ttl)/1000,
         "iat": (Date.now())/1000,
         "scopes": user.scopes,
-        "sub": user._id,
+        "sub": user.id,
 
         //this is not part of official jwt, but this allows me to do stateless xsrf check via double-submit
         //"xsrf": uuid.v4()
@@ -26,7 +26,7 @@ exports.createClaim = function(user) {
 
 exports.signJwt = function(claim) {
     //TODO - make this configurable
-    return jwt.sign(claim, jwt_privatekey, {algorithm: 'RS256'});
+    return jwt.sign(claim, config.private_key, {algorithm: 'RS256'});
 }
 
 //probbably deprecated
@@ -56,7 +56,7 @@ exports.tokenParser = function() {
     return function(req, res, next) {
         if(req.cookies && req.cookies.jwt) {
             var encoded_token = req.cookies.jwt;
-            jwt.verify(encoded_token, jwt_publickey, function(err, decoded) {
+            jwt.verify(encoded_token, config.public_key, function(err, decoded) {
                 if(err) return next(err);
                 req.token = decoded;
                 if(req.token.xsrf != req.headers["x-xsrf-token"]) {
