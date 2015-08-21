@@ -47,7 +47,7 @@ app.use(function(err, req, res, next) {
 });
 
 function start() {
-    models.sequelize.sync(/*{force: true}*/).then(function() {
+    models.sequelize.sync({force: true}).then(function() {
         var port = process.env.PORT || '8080';
         app.listen(port);
         console.log("Express server listening on port %d in %s mode", port, app.settings.env);

@@ -114,11 +114,15 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         templateUrl: 't/register.html',
         controller: 'RegisterController'
     })
+
+    /* //moved to profile service
     .when('/user', {
         templateUrl: 't/user.html',
         controller: 'UserController',
         requiresLogin: true
     })
+    */
+
     .otherwise({
         redirectTo: '/login'
     });

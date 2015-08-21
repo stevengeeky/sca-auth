@@ -140,10 +140,4 @@ function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $loca
     redirector.go();
 }]);
 
-/*
-controllers.controller('IUCASSuccessController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
-    console.log("IUCASSuccess");
-    console.dir($routeParams);
-}]);
-*/
+

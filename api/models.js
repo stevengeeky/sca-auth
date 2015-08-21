@@ -1,27 +1,31 @@
 
+//contrib
 var Sequelize = require('sequelize');
 var bcrypt = require('bcrypt-nodejs');
 
-var config = require('./config/config').config;
+//mine
+var config = require('./config/config');
 
-var sequelize = new Sequelize('database', 'username', 'password', {
-    dialect: 'sqlite',
-    storage: '/usr/local/tmp/auth.sqlite'
-})
+console.dir(config.sequelize);
+var sequelize = new Sequelize('database', 'username', 'password', config.sequelize);
 
 var User = sequelize.define('User', {
-    //attributes
+
+    //for user/pass login
     username: Sequelize.STRING,
     email: Sequelize.STRING,
     password_hash: Sequelize.STRING,
 
     email_confirmed: { type: Sequelize.BOOLEAN, defaultValue: false },
 
+    //for 3rd party login
     iucas: Sequelize.STRING,
+    googleid: Sequelize.STRING,
 
-    login_date: Sequelize.DATE,
-    signup_date: Sequelize.DATE,
+    login_date: Sequelize.DATE,         //last login date
+    signup_date: Sequelize.DATE,        //when user signed up
 
+    //jwt token scopes (authorization)
     scopes: {
         type: Sequelize.TEXT,
         get: function() {
@@ -32,7 +36,9 @@ var User = sequelize.define('User', {
         }
     },
 
-    active: Sequelize.BOOLEAN,
+    //prevent user from loggin in (usually temporarily)
+    active: { type: Sequelize.BOOLEAN, defaultValue: true }
+
 }, {
     classMethods: {
         //why is this here?
