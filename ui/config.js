@@ -9,6 +9,7 @@ angular.module('app.config', [])
     title: 'Authentication Service',
     admin_email: 'hayashis@iu.edu',
     logo_400_url: 'images/sample.jpg',
+    //logo_400_url: 'images/meshconfig_logo.jpg',
     version: '0.0.1',
 
     //URL for auth service API

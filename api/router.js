@@ -31,4 +31,8 @@ router.post('/refresh', jwt({secret: config.public_key}), function(req, res) {
     });
 });
 
+router.get('/health', function(req, res) {
+    res.json({status: 'ok'});
+});
+
 module.exports = router;

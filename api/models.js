@@ -6,7 +6,6 @@ var bcrypt = require('bcrypt-nodejs');
 //mine
 var config = require('./config/config');
 
-console.dir(config.sequelize);
 var sequelize = new Sequelize('database', 'username', 'password', config.sequelize);
 
 var User = sequelize.define('User', {

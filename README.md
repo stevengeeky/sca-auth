@@ -1,4 +1,4 @@
-trident authentication module reponsible performing user authentication and token generation.
+SCA authentication module reponsible performing user authentication and token generation.
 
 all components who uses this auth module will need public key from this authentication module (via api or config?)
 
@@ -18,3 +18,6 @@ Response
 
 In AngularJS, you can implement your jwtInterceptor so that if JWT token is expiring soon (like in an hour), it will make /refresh request before making the main request. You can see the sample code in ui/js/app.js
 
+# TODO
+
+?

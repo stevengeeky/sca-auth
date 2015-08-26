@@ -8,6 +8,7 @@ var payload = {
     iat: 1416929061,
     jti: "802057ff9b5b4eb7fbb8856b6eb2cc5b",
     scopes: {
+        common: ["user"],
         isdp: {
             actions: ['request']
         },

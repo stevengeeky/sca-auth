@@ -14,10 +14,10 @@ passport.use(new passport_localst(
             //console.log("user query result");
             //console.dir(user);
             if (!user) {
-                return done(null, false, { message: 'Incorrect email/username.' });
+                return done(null, false, { message: 'Incorrect email or username' });
             } else {
                 if(!user.isPassword(password)) {
-                    return done(null, false, { message: 'Incorrect password.' });
+                    return done(null, false, { message: 'Incorrect password' });
                 }
                 done(null, user);
             }

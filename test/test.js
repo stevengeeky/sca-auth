@@ -1,18 +1,20 @@
-var mongoose = require('mongoose');
+
+//contrib
 var request = require('supertest')
 var assert = require('assert');
 
-var config = require('../config/config.js').config;
+//mine
+var config = require('../api/config/config');
+var models = require('../api/models');
 
 process.env.DEBUG="*";
 
 before(function(done) {
-    console.log("connecting to mongo");
-    mongoose.connect(config.mongodb, {}, done);
+    done();
 });
 
 describe('/query', function() {
-    var app = require('../app');
+    var app = require('../api/server').app;
     describe('/', function() {
         it('make sure /(index) redirect', function(done) {
             request(app).get('/')
@@ -65,7 +67,7 @@ describe('/query', function() {
 });
 
 describe('model', function() {
-    var User = require('../models/user.js').User;
+    var User = require('../api/models').User;
     before(function(done) {
         //console.log("removing testuser");
         User.remove({"local.username": 'testuser'}, done);
