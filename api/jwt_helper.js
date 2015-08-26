@@ -3,7 +3,7 @@ var jwt = require('jsonwebtoken');
 var fs = require('fs');
 var uuid = require('node-uuid');
 
-var config = require('./config/config').config;
+var config = require('./config/config');
 var service_name = "auth";
 
 //var jwt_publickey = fs.readFileSync('./config/auth.pub', {encoding: 'ascii'});
@@ -11,8 +11,8 @@ var service_name = "auth";
 
 exports.createClaim = function(user) {
     return {
-        "iss": config.iss,
-        "exp": (Date.now() + config.ttl)/1000,
+        "iss": config.auth.iss,
+        "exp": (Date.now() + config.auth.ttl)/1000,
         "iat": (Date.now())/1000,
         "scopes": user.scopes,
         "sub": user.id,
@@ -26,7 +26,7 @@ exports.createClaim = function(user) {
 
 exports.signJwt = function(claim) {
     //TODO - make this configurable
-    return jwt.sign(claim, config.private_key, {algorithm: 'RS256'});
+    return jwt.sign(claim, config.auth.private_key, {algorithm: 'RS256'});
 }
 
 //probbably deprecated

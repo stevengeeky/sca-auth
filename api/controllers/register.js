@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var jwt_helper = require('../jwt_helper');
 
-var config = require('../config/config').config;
+var config = require('../config/config');
 
 var User = require('../models').User;
 
@@ -11,7 +11,7 @@ function registerUser(username, email, password, done) {
     var user = User.build({
         username: username, 
         email: email,
-        scopes: config.default_scopes
+        scopes: config.auth.default_scopes
     });
     user.setPassword(password, function(err) {
         //console.log("set password done");

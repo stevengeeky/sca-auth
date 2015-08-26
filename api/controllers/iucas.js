@@ -1,8 +1,13 @@
+
+//contrib
 var express = require('express');
 var router = express.Router();
 var request = require('request');
+var winston = require('winston');
 
-var config = require('../config/config').config;
+//mine
+var config = require('../config/config');
+var logger = new winston.Logger(config.logger.winston);
 
 var jwt_helper = require('../jwt_helper');
 var User = require('../models').User;
@@ -22,24 +27,29 @@ function registerUser(id, email, done) {
         email: email, 
         email_confirmed: true, //let's trust IU id
         iucas: id,
-        scopes: config.default_scopes
+        scopes: config.auth.default_scopes
     }).then(done);
 }
 
 router.get('/', function(req, res, next) {
     var ticket = req.query.casticket;
 
+    /*
     if(!req.headers.referer) {
-        throw new Error("header: referer must be set to the original URL used for casurl (configured in iu config) in order to validate the castoken");
+        return next(new Error("header: referer must be set to the original URL used for casurl"));
     }
     var casurl = req.headers.referer; //config.casurl;
+    */
+    var casurl = config.iucas.home_url;
     
     //TODO should I make this configurable?
     //console.log("valiating casticket:"+ticket);
     //console.log("valiating casurl:"+casurl);
     //console.dir(req.headers.referer);
-    request('https://cas.iu.edu/cas/validate?cassvc=IU&casticket='+ticket+'&casurl='+casurl, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
+    logger.debug("validating cas ticket:"+ticket+" casurl:"+casurl);
+    request('https://cas.iu.edu/cas/validate?cassvc=IU&casticket='+ticket+'&casurl='+casurl, function (err, response, body) {
+        if(err) return next(err);
+        if (response.statusCode == 200) {
             var reslines = body.split("\n");
             if(reslines[0].trim() == "yes") {
                 var uid = reslines[1].trim();
@@ -64,13 +74,13 @@ router.get('/', function(req, res, next) {
                                     "If you have already registered with username / password, please login using username / password first, "+
                                     "then associate your IU CAS account under your authentication profile settings."}];
                                 res.cookie('messages', JSON.stringify(messages));
-                                return res.redirect(config.login_url);
+                                return res.redirect(config.iucas.home_url);
                             } else {
                                 registerUser(uid, uid+"@iu.edu", function(user) {
                                     //if(err) return next(err);
                                     var claim = jwt_helper.createClaim(user);
                                     var jwt = jwt_helper.signJwt(claim);
-                                    return res.redirect(config.success_url+"?jwt="+jwt);
+                                    return res.redirect(config.iucas.success_url+"?jwt="+jwt);
                                 });
                             }
                         });
@@ -79,13 +89,16 @@ router.get('/', function(req, res, next) {
                         console.log("iucas authentication successful. iu id:"+uid);
                         var claim = jwt_helper.createClaim(user);
                         var jwt = jwt_helper.signJwt(claim);
-                        return res.redirect(config.success_url+"?jwt="+jwt);
+                        return res.redirect(config.iucas.success_url+"?jwt="+jwt);
                     }
                 });
             } else {
                 console.log("IUCAS failed to validate");
                 res.sendStatus("403");//Is 403:Forbidden appropriate return code?
             }
+        } else {
+            //non 200 code...
+            next(new Error(body));
         }
     })
 });

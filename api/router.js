@@ -4,7 +4,7 @@ var express = require('express');
 var router = express.Router();
 var jwt = require('express-jwt');
 
-var config = require('./config/config').config;
+var config = require('./config/config');
 
 var jwt_helper = require('./jwt_helper');
 var models = require('./models');
@@ -19,7 +19,7 @@ router.use('/iucas', iucas);
 router.use('/register', register);
 //router.use('/user', user);
 
-router.post('/refresh', jwt({secret: config.public_key}), function(req, res) {
+router.post('/refresh', jwt({secret: config.auth.public_key}), function(req, res) {
     //console.log("looking for user id:"+req.user.sub);
     models.User.findOne({where: {id: req.user.sub}}).then(function(user) {
         //return res.send(500, new Error("test"));
