@@ -15,8 +15,15 @@ angular.module('app.config', [])
     //URL for auth service API
     api: 'https://soichi7.ppa.iu.edu/api/auth',
 
+    //shared servive api and ui urls (for menus and stuff)
+    shared_api: 'https://soichi7.ppa.iu.edu/api/shared',
+    shared_url: 'https://soichi7.ppa.iu.edu/shared',
+
+    profile_api: 'https://soichi7.ppa.iu.edu/api/profile',
+
     //default location to redirect after successful login
     default_redirect_url: 'https://soichi7.ppa.iu.edu/profile', 
+    //default_redirect_url: '#/welcome',
 
     jwt_id: 'jwt'
 });

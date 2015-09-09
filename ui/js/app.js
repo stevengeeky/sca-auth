@@ -9,7 +9,8 @@ var app = angular.module('app', [
     'toaster',
     'angular-loading-bar',
     'angular-jwt',
-    'authControllers' //contains searchControllers - others?
+    'authControllers', //contains searchControllers - others?
+    'sca',
 ]);
 
 /*
@@ -48,14 +49,16 @@ function($location, $routeParams, appconf) {
             if(redirect) {
                 console.log("redirecting to "+redirect);
                 localStorage.removeItem('post_auth_redirect');
-                window.location = redirect;
-                return true;
             } else {
-                console.log("no post_auth_redirect set.. using default_redirect_url:"+appconf.default_redirect_url);
+                console.log("post_auth_redirect not set.. using default_redirect_url:"+appconf.default_redirect_url);
                 //$location.path("/user")
-                window.location = appconf.default_redirect_url;
-                return false;
+                redirect = appconf.default_redirect_url;
             }
+            window.location = redirect;
+
+            //if url starts with #, then it's internal redirect
+            if(redirect[0] == "#") return false;
+            return true;
         }
     }
 }]);
@@ -92,52 +95,53 @@ app.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
 //configure route
 app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
     $routeProvider.
-    when('/login', {
-        templateUrl: 't/login.html',
-        controller: 'LoginController'
+    when('/signin', {
+        templateUrl: 't/signin.html',
+        controller: 'SigninController'
+    })
+    .when('/signout', {
+        templateUrl: 't/signout.html',
+        controller: 'SignoutController'
+    })
+    .when('/setpass', {
+        templateUrl: 't/setpass.html',
+        controller: 'SetpassController',
+        requiresLogin: true
     })
     /*
-    .when('/iucas-success', {
-        templateUrl: 't/empty.html',
-        controller: 'IUCASuccessController'
-    })
-    */
     .when('/success', {
         templateUrl: 't/empty.html',
         controller: 'SuccessController'
     })
-    .when('/resetpass', {
-        templateUrl: 't/resetpass.html',
-        controller: 'ResetpassController'
+    */
+    .when('/forgotpass', {
+        templateUrl: 't/forgotpass.html',
+        controller: 'ForgotpassController'
     })
-    .when('/register', {
-        templateUrl: 't/register.html',
-        controller: 'RegisterController'
+    .when('/signup', {
+        templateUrl: 't/signup.html',
+        controller: 'SignupController'
     })
-
-    /* //moved to profile service
-    .when('/user', {
-        templateUrl: 't/user.html',
-        controller: 'UserController',
+    .when('/settings', {
+        templateUrl: 't/settings.html',
+        controller: 'SettingsController',
         requiresLogin: true
     })
-    */
-
     .otherwise({
-        redirectTo: '/login'
+        redirectTo: '/signin'
     });
     
     //console.dir($routeProvider);
 }]).run(['$rootScope', '$location', 'toaster', 'jwtHelper', 'appconf', function($rootScope, $location, toaster, jwtHelper, appconf) {
     $rootScope.$on("$routeChangeStart", function(event, next, current) {
-        console.log("route changed from "+current+" to :"+next);
+        //console.log("route changed from "+current+" to :"+next);
         //redirect to /login if user hasn't authenticated yet
         if(next.requiresLogin) {
             var jwt = localStorage.getItem(appconf.jwt_id);
             if(jwt == null || jwtHelper.isTokenExpired(jwt)) {
-                toaster.warning("Please login first");
+                toaster.warning("Please singin first");
                 localStorage.setItem('post_auth_redirect', next.originalPath);
-                $location.path("/login");
+                $location.path("/signin");
                 event.preventDefault();
             }
         }

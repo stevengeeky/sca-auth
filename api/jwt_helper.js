@@ -25,8 +25,7 @@ exports.createClaim = function(user) {
 }
 
 exports.signJwt = function(claim) {
-    //TODO - make this configurable
-    return jwt.sign(claim, config.auth.private_key, {algorithm: 'RS256'});
+    return jwt.sign(claim, config.auth.private_key, config.auth.sign_opt);
 }
 
 //probbably deprecated

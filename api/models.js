@@ -1,11 +1,13 @@
+'use strict';
 
 //contrib
 var Sequelize = require('sequelize');
-var bcrypt = require('bcrypt-nodejs');
+var bcrypt = require('bcrypt');
+var winston = require('winston');
 
 //mine
 var config = require('./config/config');
-
+var logger = new winston.Logger(config.logger.winston);
 var sequelize = new Sequelize('database', 'username', 'password', config.sequelize);
 
 var User = sequelize.define('User', {
@@ -14,6 +16,9 @@ var User = sequelize.define('User', {
     username: Sequelize.STRING,
     email: Sequelize.STRING,
     password_hash: Sequelize.STRING,
+
+    //used to reset password
+    password_reset_token: Sequelize.STRING,
 
     email_confirmed: { type: Sequelize.BOOLEAN, defaultValue: false },
 
@@ -69,8 +74,11 @@ var User = sequelize.define('User', {
             * rounds=25: ~1 hour/hash
             * rounds=31: 2-3 days/hash
             */
+            //logger.debug("generating sald");
             bcrypt.genSalt(10, function(err, salt) {
-                bcrypt.hash(password, salt, null, function(err, hash) {
+                //logger.debug("encrypting pass");
+                bcrypt.hash(password, salt, function(err, hash) {
+                    //logger.debug("done "+err);
                     if(err) return cb(err);
                     //console.log("hash: "+hash);
                     rec.password_hash = hash;
@@ -79,6 +87,8 @@ var User = sequelize.define('User', {
             });
         },
         isPassword: function(password) {
+            //logger.debug("checking password now"); 
+            if(!this.password_hash) return false; //no password, no go
             return bcrypt.compareSync(password, this.password_hash);
         }
     }
@@ -161,6 +171,7 @@ userSchema.statics.requestInvite = function(email, cb) {
 }
 */
 
-
 exports.sequelize = sequelize;
 exports.User = User;
+
+

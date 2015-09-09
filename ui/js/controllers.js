@@ -1,3 +1,4 @@
+(function() {
 'use strict';
 
 /*
@@ -10,7 +11,25 @@ var controllers = angular.module('authControllers', [
     'ui.bootstrap',
 ]);
 
-controllers.controller('LoginController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+controllers.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
+    var jwt = localStorage.getItem(appconf.jwt_id);
+    var user = jwtHelper.decodeToken(jwt);
+
+    var pub = {fullname: "Soichi"};
+
+    $http.get(appconf.profile_api+'/public/'+user.sub)
+    .success(function(profile, status, headers, config) {
+        for(var k in profile) {         
+            pub[k] = profile[k]; 
+        }
+    });
+
+    return {
+        pub: pub,
+    }
+}]);
+
+controllers.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
 
     //var $redirect = $routeParams.redirect ? $routeParams.redirect : "#/user";
@@ -51,7 +70,9 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
                 toaster.pop(message.type, message.title, message.message);
             }
         });
-        $cookies.remove("messages", {path: "/"}); //TODO - without path, it tries to remove cookie under /auth path not find it
+        //why path="/"? Without it, it tries to remove cookie under just /auth path and not find messges
+        //that comes from other apps. (make sure to set cookie under "/" on your other apps)
+        $cookies.remove("messages", {path: "/"}); 
     }
 
     $scope.userpass = {};
@@ -60,6 +81,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
+            //TODO - how should I forward success message?
             if(!redirector.go()) {
                 toaster.success(data.message);
             }
@@ -70,15 +92,11 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 
     $scope.begin_iucas = function() {
-        //IU cas doesn't let us login via Ajax...
-        var casurl = appconf.api+'/iucas';
+        //I can't pass # for callback somehow (I don't know how to make it work, or iucas removes it)
+        //so let's let another html page handle the callback, do the token validation through iucas and generate the jwt 
+        //and either redirect to profile page (default) or force user to setup user/pass if it's brand new user
+        var casurl = 'https://soichi7.ppa.iu.edu/auth/iucascb.html';
         window.location = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+casurl;
-        /*
-        //var url = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+encodeURIComponent(window.location+'#/iucas-success');
-        var url = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+encodeURIComponent(document.location+'#/iucas-next');
-        console.log("redirecting to "+url);
-        window.location = url;
-        */
     }
 
     $scope.test = function() {
@@ -106,7 +124,14 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 }]);
 
-controllers.controller('RegisterController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+controllers.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+    localStorage.removeItem(appconf.jwt_id);
+    $location.path("/signin");
+    toaster.success("Good Bye!");
+}]);
+
+controllers.controller('SignupController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
     $scope.alerts = [];
 
@@ -114,9 +139,10 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     $scope.form = {};
 
     $scope.submit = function() {
-        $http.post(appconf.api+'/register', $scope.form)
+        $http.post(appconf.api+'/singup', $scope.form)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
+            //TODO - how should I forward success message?
             if(!redirector.go()) {
                 toaster.success(data.message);
             }
@@ -127,8 +153,39 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 }]);
 
-//only used by iucas? if so, I should change the name. if not, I should make this a service
-controllers.controller('SuccessController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$location', '$window', 'redirector', 
+controllers.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+    $scope.alerts = [];
+
+    //stores form
+    $scope.form = {};
+
+    $http.get(appconf.api+'/local/me')
+    .success(function(data, status, headers, config) {
+        $scope.form.username = data.username;
+    })
+    .error(function(data, status, headers, config) {
+        toaster.error(data.message);
+    }); 
+
+    $scope.submit = function() {
+        $http.put(appconf.api+'/local/setpass', {password: $scope.form.password})
+        .success(function(data, status, headers, config) {
+            //localStorage.setItem(appconf.jwt_id, data.jwt);
+            //TODO - how should I forward success message?
+            if(!redirector.go()) {
+                toaster.success(data.message);
+            }
+        })
+        .error(function(data, status, headers, config) {
+            toaster.error(data.message);
+        });         
+    }
+}]);
+
+/*
+//right now, this is only used by IUCAS only. 
+controllers.controller('ReceiveJWTController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$location', '$window', 'redirector', 
 function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $location, $window, redirector) {
     if($routeParams.jwt) {
         console.log("received jwt:"+$routeParams.jwt);
@@ -139,5 +196,53 @@ function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $loca
     }
     redirector.go();
 }]);
+*/
+app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile',
+function($scope, appconf, $route, toaster, $http, profile) {
+    $scope.public_profile = profile.pub;
+    /*
+    $scope.form_account = null; 
+
+    $http.get(appconf.api+'/settings')
+    .success(function(profile, status, headers, config) {
+        $scope.form_profile  = profile;
+    })
+    .error(function(data, status, headers, config) {
+        if(data && data.message) {
+            toaster.error(data.message);
+        }
+    });
+    $scope.submit_profile = function() {
+        $http.put(appconf.api+'/public', $scope.form_profile)
+        .success(function(data, status, headers, config) {
+            toaster.success(data.message);
+        })
+        .error(function(data, status, headers, config) {
+            toaster.error(data.message);
+        });
+    }
+    */
+
+    //load menu
+    $http.get(appconf.shared_api+'/menu')
+    .success(function(menu) {
+        $scope.menu = menu;
+        menu.forEach(function(m) {
+            switch(m.id) {
+            case 'top':
+                $scope.top_menu = m;
+                break;
+            case 'topright':
+                $scope.topright_menu = m;
+                break;
+            case 'settings':
+                $scope.settings_menu = m;
+                break;
+            }
+        });
+    });
+}]);
 
 
+
+})(); //scope barrier

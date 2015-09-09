@@ -20,4 +20,8 @@ In AngularJS, you can implement your jwtInterceptor so that if JWT token is expi
 
 # TODO
 
-?
+Implement password reset under #/settings
+Implement 3rd party accounts link / unlink
+Implement #/forgotpass
+
+
