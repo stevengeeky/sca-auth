@@ -14,8 +14,7 @@ var controllers = angular.module('authControllers', [
 controllers.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
     var jwt = localStorage.getItem(appconf.jwt_id);
     var user = jwtHelper.decodeToken(jwt);
-
-    var pub = {fullname: "Soichi"};
+    var pub = {fullname: null};
 
     $http.get(appconf.profile_api+'/public/'+user.sub)
     .success(function(profile, status, headers, config) {
@@ -28,6 +27,25 @@ controllers.factory('profile', ['appconf', '$http', 'jwtHelper', function(appcon
         pub: pub,
     }
 }]);
+
+/*
+controllers.directive('compareTo', function() {
+    return {
+        require: "ngModel",
+        scope: {
+            otherModelValue: "=compareTo"
+        },
+        link: function(scope, element, attributes, ngModel) {
+            ngModel.$validators.compareTo = function(modelValue) {
+                return modelValue == scope.otherModelValue;
+            };
+            scope.$watch("otherModelValue", function() {
+                ngModel.$validate();
+            });
+        }
+    };
+});
+*/
 
 controllers.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
@@ -78,7 +96,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     $scope.userpass = {};
     $scope.submit = function() {
         //console.dir($scope.userpass);
-        $http.post(appconf.api+'/local/auth', $scope.userpass)
+        $http.post(appconf.api+'/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
             //TODO - how should I forward success message?
@@ -139,7 +157,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     $scope.form = {};
 
     $scope.submit = function() {
-        $http.post(appconf.api+'/singup', $scope.form)
+        $http.post(appconf.api+'/signup', $scope.form)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
             //TODO - how should I forward success message?
@@ -160,7 +178,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     //stores form
     $scope.form = {};
 
-    $http.get(appconf.api+'/local/me')
+    $http.get(appconf.api+'/me')
     .success(function(data, status, headers, config) {
         $scope.form.username = data.username;
     })
@@ -169,7 +187,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }); 
 
     $scope.submit = function() {
-        $http.put(appconf.api+'/local/setpass', {password: $scope.form.password})
+        $http.put(appconf.api+'/setpass', {password: $scope.form.password})
         .success(function(data, status, headers, config) {
             //localStorage.setItem(appconf.jwt_id, data.jwt);
             //TODO - how should I forward success message?
@@ -178,6 +196,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
             }
         })
         .error(function(data, status, headers, config) {
+            console.dir(data);
             toaster.error(data.message);
         });         
     }
@@ -200,6 +219,9 @@ function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $loca
 app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile',
 function($scope, appconf, $route, toaster, $http, profile) {
     $scope.public_profile = profile.pub;
+    $scope.user = null;
+    $scope.form_password = {};
+    $scope.password_strength = {};
     /*
     $scope.form_account = null; 
 
@@ -212,16 +234,41 @@ function($scope, appconf, $route, toaster, $http, profile) {
             toaster.error(data.message);
         }
     });
-    $scope.submit_profile = function() {
-        $http.put(appconf.api+'/public', $scope.form_profile)
-        .success(function(data, status, headers, config) {
-            toaster.success(data.message);
-        })
-        .error(function(data, status, headers, config) {
-            toaster.error(data.message);
-        });
-    }
     */
+    $scope.submit_password = function() {
+        if($scope.form_password.new == $scope.form_password.new_confirm) {
+            $http.put(appconf.api+'/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
+            .success(function(data, status, headers, config) {
+                toaster.success(data.message);
+            })
+            .error(function(data, status, headers, config) {
+                toaster.error(data.message);
+            });
+        } else {
+            console.log("password confirmation fail");
+        }
+    }
+
+    $scope.$watch('form_password.new', function(newv, oldv) {
+        if(newv) {
+            //gather strings that we don't want user to use as password (like user's own fullname, etc..)
+            var used = [];
+            if($scope.public_profile) used.push($scope.public_profile.fullname);
+            if($scope.user) { 
+                used.push($scope.user.username);
+                used.push($scope.user.email);
+            }
+            //https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
+            var st = zxcvbn(newv, used);
+            $scope.password_strength = st;
+        }
+    });
+    
+    //load user info
+    $http.get(appconf.api+'/me')
+    .success(function(info) {
+        $scope.user = info;
+    });
 
     //load menu
     $http.get(appconf.shared_api+'/menu')
@@ -232,9 +279,11 @@ function($scope, appconf, $route, toaster, $http, profile) {
             case 'top':
                 $scope.top_menu = m;
                 break;
+            /*
             case 'topright':
                 $scope.topright_menu = m;
                 break;
+            */
             case 'settings':
                 $scope.settings_menu = m;
                 break;
@@ -242,7 +291,5 @@ function($scope, appconf, $route, toaster, $http, profile) {
         });
     });
 }]);
-
-
 
 })(); //scope barrier

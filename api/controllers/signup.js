@@ -8,10 +8,10 @@ var winston = require('winston');
 //mine
 var config = require('../config/config');
 var logger = new winston.Logger(config.logger.winston);
-var User = require('../models').User;
+var db = require('../models');
 
 function registerUser(username, email, password, done) {
-    var user = User.build({
+    var user = db.User.build({
         username: username, 
         email: email,
         scopes: config.auth.default_scopes
@@ -32,13 +32,13 @@ router.post('/', function(req, res, next) {
     //TODO - validate password strength?
     
     //check for username already taken
-    User.findOne({where: {username: username} }).then(function(user) {
+    db.User.findOne({where: {username: username} }).then(function(user) {
         if(user) {
             //TODO - maybe I should go ahead and forward user to login form?
             return next(new Error('The username you chose is already registered. If it is yours, please try logging in, or register with a different username.'));
         } else {
             //check for email already taken
-            User.findOne({where: {email: email} }).then(function(user) {
+            db.User.findOne({where: {email: email} }).then(function(user) {
                 if(user) {
                     //TODO - maybe I should go ahead and forward user to login form?
                     return next(new Error('The email address you chose is already registered. If it is yours, please try logging in, or register with a different email address.'));

@@ -10,15 +10,21 @@ var service_name = "auth";
 //var jwt_privatekey = fs.readFileSync('./config/auth.key', {encoding: 'ascii'});
 
 exports.createClaim = function(user) {
+    var ids = {
+        username: user.username,
+        email: user.email,
+    };
+
     return {
         "iss": config.auth.iss,
         "exp": (Date.now() + config.auth.ttl)/1000,
         "iat": (Date.now())/1000,
         "scopes": user.scopes,
-        "sub": user.id,
+        "sub": user.username, //user.id,
 
         //this is not part of official jwt, but this allows me to do stateless xsrf check via double-submit
         //"xsrf": uuid.v4()
+        //"userid": user.username, 
     }
     //console.log("payload:");
     //console.dir(payload);

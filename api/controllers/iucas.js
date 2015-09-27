@@ -10,10 +10,10 @@ var config = require('../config/config');
 var logger = new winston.Logger(config.logger.winston);
 
 var jwt_helper = require('../jwt_helper');
-var User = require('../models').User;
+var db = require('../models');
 
 function finduserByiucasid(id, done) {
-    User.findOne({where: {"iucas": id}}).then(function(user) {
+    db.User.findOne({where: {"iucas": id}}).then(function(user) {
         //console.dir(user);
         if (!user) {
             return done(null, false, { message: "Couldn't find registered IU CAS ID:"+id });
@@ -24,7 +24,7 @@ function finduserByiucasid(id, done) {
 
 function register_newuser(uid, res) {
     logger.info("registering new user with iucas id:"+uid);
-    User.findOne({where: {'username': uid}}).then(function(user) {
+    db.User.findOne({where: {'username': uid}}).then(function(user) {
         //if(err) return next(err);
         if(user) {
             logger.warn("username already registered:"+uid+"(can't auto register)");
@@ -41,16 +41,14 @@ function register_newuser(uid, res) {
             return res.redirect(config.iucas.home_url);
         } else {
             //brand new user - go ahead and create a new account using IU id as sca user id
-            User.create({
+            db.User.create({
                 username: uid, //let's use IU id as local username
                 email: uid+"@iu.edu", 
                 email_confirmed: true, //let's trust IU id
                 iucas: uid,
                 scopes: config.auth.default_scopes
             }).then(function(user) {
-                //if(err) return next(err);
                 return_jwt(user, res);
-                //return res.redirect(config.iucas.receivejwt_url+"?jwt="+jwt);
             });
         }
     });
@@ -63,17 +61,10 @@ function return_jwt(user, res) {
     var need_setpass = (!user.password_hash);
 
     return res.json({jwt:jwt, need_setpass: need_setpass});
-    //return res.redirect(config.iucas.receivejwt_url+"?jwt="+jwt);
 }
 
 router.get('/verify', function(req, res, next) {
     var ticket = req.query.casticket;
-    /*
-    if(!req.headers.referer) {
-        return next(new Error("header: referer must be set to the original URL used for casurl"));
-    }
-    var casurl = req.headers.referer; //config.casurl;
-    */
     var casurl = config.iucas.home_url;
     
     logger.debug("validating cas ticket:"+ticket+" casurl:"+casurl);

@@ -18,7 +18,7 @@ var expressWinston = require('express-winston');
 //mine
 var config = require('./config/config');
 var logger = new winston.Logger(config.logger.winston);
-var models = require('./models');
+var db = require('./models');
 
 //init express
 var app = express();
@@ -64,12 +64,16 @@ process.on('uncaughtException', function (err) {
 })
 
 exports.app = app;
-exports.start = function() {
-    models.sequelize.sync({force: true}).then(function() {
+exports.start = function(cb) {
+    db.sequelize
+    .sync(/*{force: true}*/)
+    .then(function() {
         var port = process.env.PORT || config.express.port || '8080';
         var host = process.env.HOST || config.express.host || 'localhost';
-        app.listen(port, host, function() {
+        app.listen(port, host, function(err) {
+            if(err) return cb(err);
             console.log("Express server listening on port %d in %s mode", port, app.settings.env);
+            cb(null);
         });
     });
 }

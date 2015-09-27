@@ -9,8 +9,9 @@ var app = angular.module('app', [
     'toaster',
     'angular-loading-bar',
     'angular-jwt',
+    'validation.match',
     'authControllers', //contains searchControllers - others?
-    'sca',
+    'sca-shared',
 ]);
 
 /*
