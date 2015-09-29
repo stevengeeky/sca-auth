@@ -54,33 +54,16 @@ router.post('/auth', function(req, res, next) {
     })(req, res, next);
 });
 
-//returns things that user might want to know about himself.
-router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
-    db.User.findOne({where: {username: req.user.sub}}).then(function(user) {
-        if(user) {
-            res.json({
-                username: user.username,
-                email: user.email,
-
-                //3rd party account ids
-                iucas: user.iucas,
-                googleid: user.googleid,
-                gitid: user.gitid,
-
-            });
-        } else res.status(404).end();
-    });
-});
 
 //used to setpassword if password_hash is empty or update exiting password (with a valid current password)
 router.put('/setpass', jwt({secret: config.auth.public_key}), function(req, res, next) {
-    db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
+    db.User.findOne({where: {username: req.user.sub}}).then(function(user) {
         logger.debug("setting password for sub:"+req.user.sub);
         if(user) {
             if(user.password_hash) {
                 if(!user.isPassword(req.body.password_old)) {
                     return setTimeout(function() {
-                        next(new Error("Wrong old password"));
+                        next(new Error("Wrong current password"));
                     }, 2000);
                 }
             }

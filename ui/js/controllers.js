@@ -11,6 +11,14 @@ var controllers = angular.module('authControllers', [
     'ui.bootstrap',
 ]);
 
+//just a service to load all users from auth service
+app.factory('serverconf', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
+    return $http.get(appconf.api+'/config')
+    .then(function(res) {
+        return res.data;
+    });
+}]);
+
 controllers.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
     var jwt = localStorage.getItem(appconf.jwt_id);
     var user = jwtHelper.decodeToken(jwt);
@@ -50,19 +58,8 @@ controllers.directive('compareTo', function() {
 controllers.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
 
-    //var $redirect = $routeParams.redirect ? $routeParams.redirect : "#/user";
-    //allow caller to specify redirect url via ?redirect param
-
     $scope.title = appconf.title;
     $scope.logo_400_url = appconf.logo_400_url;
-    //console.dir(jwt);
-    //toaster.pop('error', 'title', 'Hello there');
-    //toaster.pop('success', 'title', 'Hello there');
-    //toaster.pop('wait', 'title', 'Hello there');
-    //toaster.pop('warning', 'title', 'Hello there');
-    //toaster.pop('note', 'title', 'Hello there');
-    //toaster.success('title', 'Hello there');
-    //toaster.error('title', 'Hello there');
 
     var jwt = localStorage.getItem(appconf.jwt_id);
     if(jwt != null && !jwtHelper.isTokenExpired(jwt)) {
@@ -96,7 +93,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     $scope.userpass = {};
     $scope.submit = function() {
         //console.dir($scope.userpass);
-        $http.post(appconf.api+'/auth', $scope.userpass)
+        $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
             //TODO - how should I forward success message?
@@ -187,7 +184,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }); 
 
     $scope.submit = function() {
-        $http.put(appconf.api+'/setpass', {password: $scope.form.password})
+        $http.put(appconf.api+'/local/setpass', {password: $scope.form.password})
         .success(function(data, status, headers, config) {
             //localStorage.setItem(appconf.jwt_id, data.jwt);
             //TODO - how should I forward success message?
@@ -216,12 +213,17 @@ function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $loca
     redirector.go();
 }]);
 */
-app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile',
-function($scope, appconf, $route, toaster, $http, profile) {
+app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 
+function($scope, appconf, $route, toaster, $http, profile, serverconf) {
     $scope.public_profile = profile.pub;
     $scope.user = null;
     $scope.form_password = {};
     $scope.password_strength = {};
+
+    serverconf.then(function(_serverconf) {
+        $scope.serverconf = _serverconf;
+    });
+
     /*
     $scope.form_account = null; 
 
@@ -237,7 +239,7 @@ function($scope, appconf, $route, toaster, $http, profile) {
     */
     $scope.submit_password = function() {
         if($scope.form_password.new == $scope.form_password.new_confirm) {
-            $http.put(appconf.api+'/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
+            $http.put(appconf.api+'/local/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
             .success(function(data, status, headers, config) {
                 toaster.success(data.message);
             })
@@ -247,6 +249,24 @@ function($scope, appconf, $route, toaster, $http, profile) {
         } else {
             console.log("password confirmation fail");
         }
+    }
+    $scope.iucas_disconnect = function() {
+        toaster.info("iucas_disconnect todo");
+    }
+    $scope.iucas_connect = function() {
+        toaster.info("iucas_connect todo");
+    }
+    $scope.git_disconnect = function() {
+        toaster.info("git_disconnect todo");
+    }
+    $scope.git_connect = function() {
+        toaster.info("git_connect todo");
+    }
+    $scope.google_disconnect = function() {
+        toaster.info("google_disconnect todo");
+    }
+    $scope.google_connect = function() {
+        toaster.info("google_connect todo");
     }
 
     $scope.$watch('form_password.new', function(newv, oldv) {
@@ -269,6 +289,13 @@ function($scope, appconf, $route, toaster, $http, profile) {
     .success(function(info) {
         $scope.user = info;
     });
+    /*
+    $http.get(appconf.api+'/config')
+    .success(function(config) {
+        console.dir(config);
+        $scope.server_config = config;
+    });
+    */
 
     //load menu
     $http.get(appconf.shared_api+'/menu')
@@ -290,6 +317,11 @@ function($scope, appconf, $route, toaster, $http, profile) {
             }
         });
     });
+}]);
+
+controllers.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+    //TODO
 }]);
 
 })(); //scope barrier

@@ -13,7 +13,13 @@ module.exports = function(sequelize, DataTypes) {
     return sequelize.define('User', {
         //for user/pass login
         username: Sequelize.STRING,
+
+        //TODO - I should probably deprecate this.. since email is stored under profile
+        //this allows user to login through email, but we can't just use profile.email, since
+        //user can change that at any moment.. maybe we can allow user to change this 
+        //per request (and go through a verification process)
         email: Sequelize.STRING,
+
         password_hash: Sequelize.STRING,
 
         //used to reset password
@@ -34,8 +40,16 @@ module.exports = function(sequelize, DataTypes) {
         //jwt token scopes (authorization)
         scopes: {
             type: Sequelize.TEXT,
+            //defaultValue: "{}",  always initizlied to some default scope during creation, so this shouldn't be needed
             get: function() {
-                return JSON.parse(this.getDataValue('scopes'));
+                if(!this.getDataValue('scopes')) return {};
+                try {
+                    return JSON.parse(this.getDataValue('scopes'));
+                } catch (e) {
+                    logger.error("Failed to parse user scopes");
+                    logger.error(this.getDataValue('scopes'));
+                    return null;
+                }
             },
             set: function(o) {
                 return this.setDataValue('scopes', JSON.stringify(o));

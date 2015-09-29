@@ -15,15 +15,27 @@ exports.createClaim = function(user) {
         email: user.email,
     };
 
+    /* http://websec.io/2014/08/04/Securing-Requests-with-JWT.html
+    iss: The issuer of the token
+    aud: The audience that the JWT is intended for
+    iat: The timestamp when the JWT was created
+    nbf: A "not process before" timestamp defining an allowed start time for processing
+    exp: A timestamp defining an expiration time (end time) for the token
+    jti: Some kind of unique ID for the token
+    typ: A "type" of token. In this case it's URL but it could be a media type like these
+    */
+
     return {
         "iss": config.auth.iss,
         "exp": (Date.now() + config.auth.ttl)/1000,
         "iat": (Date.now())/1000,
         "scopes": user.scopes,
-        "sub": user.username, //user.id,
+        "sub": user.id, //can't use user.username because it might not used.
 
         //this is not part of official jwt, but this allows me to do stateless xsrf check via double-submit
         //"xsrf": uuid.v4()
+
+        //this is really tempting.. but if I allows this, how about other ids (casid, googleid, etc..?)
         //"userid": user.username, 
     }
     //console.log("payload:");

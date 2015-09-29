@@ -39,14 +39,24 @@ app.factory('jwt', ['appconf', '$cookies', 'jwtHelper', function(appconf, $cooki
 //redirecto to whevever user needs to go after auccessful login
 app.factory('redirector', ['$location', '$routeParams', 'appconf', 
 function($location, $routeParams, appconf) {
-    if($routeParams.redirect) {
-        localStorage.setItem('post_auth_redirect', $routeParams.redirect);
+    if(!localStorage.getItem('post_auth_redirect')) {
+        if($routeParams.redirect) {
+            localStorage.setItem('post_auth_redirect', $routeParams.redirect);
+        } else if(document.referrer) {
+            localStorage.setItem('post_auth_redirect', document.referrer);
+        } else {
+            //last resort.. just forward some preconfigured location
+            localStorage.setItem('post_auth_redirect', appconf.default_redirect_url);
+        }
     }
+
     return {
         //redirect to specified url
         //returns true if redirecting out of the page
         go: function() {
             var redirect = localStorage.getItem('post_auth_redirect');
+            localStorage.removeItem('post_auth_redirect');
+            /*
             if(redirect) {
                 console.log("redirecting to "+redirect);
                 localStorage.removeItem('post_auth_redirect');
@@ -55,6 +65,7 @@ function($location, $routeParams, appconf) {
                 //$location.path("/user")
                 redirect = appconf.default_redirect_url;
             }
+            */
             window.location = redirect;
 
             //if url starts with #, then it's internal redirect
