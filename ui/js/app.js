@@ -43,6 +43,7 @@ function($location, $routeParams, appconf) {
         if($routeParams.redirect) {
             localStorage.setItem('post_auth_redirect', $routeParams.redirect);
         } else if(document.referrer) {
+            console.log("referrer set to "+document.referrer);
             localStorage.setItem('post_auth_redirect', document.referrer);
         } else {
             //last resort.. just forward some preconfigured location
@@ -73,6 +74,30 @@ function($location, $routeParams, appconf) {
             return true;
         }
     }
+}]);
+
+app.factory('cookie2toaster', ['$cookies', 'toaster', function($cookies, toaster) {
+    //sometime we get error messages via cookie (like iucas registration failurer)
+    var messages = $cookies.get("messages");
+    if(messages) {
+        JSON.parse(messages).forEach(function(message) {
+            if(message.type == "error") {
+                //make it sticky (show close button and no-timeout)
+                toaster.pop({
+                    type: message.type, 
+                    title: message.title, 
+                    body: message.message, 
+                    showCloseButton: true, timeout: 0
+                });
+            } else {
+                toaster.pop(message.type, message.title, message.message);
+            }
+        });
+        //why path="/"? Without it, it tries to remove cookie under just /auth path and not find messges
+        //that comes from other apps. (make sure to set cookie under "/" on your other apps)
+        $cookies.remove("messages", {path: "/"}); 
+    }
+    return null;
 }]);
 
 /*
@@ -152,7 +177,7 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
             var jwt = localStorage.getItem(appconf.jwt_id);
             if(jwt == null || jwtHelper.isTokenExpired(jwt)) {
                 toaster.warning("Please singin first");
-                localStorage.setItem('post_auth_redirect', next.originalPath);
+                localStorage.setItem('post_auth_redirect', '#'+next.originalPath);
                 $location.path("/signin");
                 event.preventDefault();
             }

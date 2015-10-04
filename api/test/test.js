@@ -4,8 +4,9 @@ var request = require('supertest')
 var assert = require('assert');
 
 //mine
-var config = require('../api/config/config');
-var models = require('../api/models');
+var config = require('../config/config');
+var db = require('../models');
+var app = require('../server').app;
 
 process.env.DEBUG="*";
 
@@ -13,8 +14,8 @@ before(function(done) {
     done();
 });
 
+/*
 describe('/query', function() {
-    var app = require('../api/server').app;
     describe('/', function() {
         it('make sure /(index) redirect', function(done) {
             request(app).get('/')
@@ -67,48 +68,9 @@ describe('/query', function() {
 });
 
 describe('model', function() {
-    var User = require('../api/models').User;
     before(function(done) {
         //console.log("removing testuser");
-        User.remove({"local.username": 'testuser'}, done);
-
-        /* create user..
-        var soichi = new User({
-            local: {username: "soichih"},
-            profile: {email: "soichih@gmail.com"}
-        });
-        soichi.setPassword("...........");
-        soichi.save();
-        */
-
-        /* update password..
-        User.findOne({"local.username": "soichih"}, function(err, user) {
-            if(err) return done(err);
-            user.setPassword("...............", function(err) {
-                if(err) return done(err);
-                user.save(function(err, user) {
-                    if(err) return done(err);
-                    //console.dir(user);
-                    done();
-                });
-            });
-        });
-        */
-
-        /*
-        //update record
-        User.findOne({"local.username": "soichih"}, function(err, user) {
-            if(err) return done(err);
-            user.profile.fullname = "Soichi Hayashi";
-            user.profile.nickname = "Soichi";
-            user.scopes = {dicom: ['admin', 'project_a']};
-            user.save(function(err, user) {
-                if(err) return done(err);
-                //console.dir(user);
-                done();
-            });
-        });
-        */
+        db.User.remove({"local.username": 'testuser'}, done);
 
     });
 
@@ -133,35 +95,9 @@ describe('model', function() {
                 });
             });
         });
-        /*
-        it('request invite', function(done) {
-            User.requestInvite("test@email.com", function(err) {
-                if(err) throw err;
-                User.findOne({emails: 'test@email.com'}, function(err, users) {
-                    if(!users) {
-                        return done(new Error("can't find the invitation record"));
-                    }
-                    if(users.emails[0] != "test@email.com") {
-                        return done(new Error("email doesn't match"));
-                    }
-                    done();//all good
-                });
-            });
-        });
-        */
-        /* already done
-        it('find record', function(done) {
-            User.findOne({email: 'test@email.com'}, function(err, users) {
-                if(err) throw err;
-                //console.dir(users);
-                //TODO - validate
-                done();
-            });
-        });
-        */
     });
 });
-
+*/
 /*
 describe('etl', function(){
     var etl = require('../etl');

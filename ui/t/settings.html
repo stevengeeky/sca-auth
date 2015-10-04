@@ -22,6 +22,10 @@
                 <p class="text-muted">An email address used to login to your account - maybe different from the current email address in your public profile.</p>
                 <input type="text" class="form-control" ng-model="user.email" disabled/>
             </div>
+            <p class="text-muted">Last Login: 
+                <span ng-if="!user.times.local_login">Never</span>
+                <time ng-if="user.times.local_login">{{user.times.local_login | date:'medium'}}</time>
+            </p>
         </li>
         <li class="list-group-item heading" ng-if="serverconf.local">
             <h4 class="list-group-item-heading">Change Password</h4>
@@ -60,20 +64,38 @@
             <form>
                 <div class="well" ng-if="serverconf.iucas">
                     <img src="images/iu.account_logo.png" class="account pull-left" style="padding-right: 10px;">
-                    <button class="btn pull-right" ng-if="user.iucas.id" ng-click="iucas_disconnect()">Disconnect</button>
-                    <button class="btn pull-right" ng-if="!user.iucas.id" ng-click="iucas_connect()">Connect</button>
+                    <button class="btn pull-right" ng-if="user.iucas" ng-click="disconnect('iucas')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.iucas" ng-click="iucas_connect()">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.iucas"><b>{{user.iucas}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.iucas_login">Never</span>
+                        <time ng-if="user.times.iucas_login">{{user.times.iucas_login | date:'medium'}}</time>
+                    </p>
                     <h4>Indiana University CAS</h4>
                 </div> 
                 <div class="well" ng-if="serverconf.git">
                     <span class="pull-left">Git</span>
-                    <button class="btn pull-right" ng-if="user.git.id" ng-click="git_disconnect()">Disconnect</button>
-                    <button class="btn pull-right" ng-if="!user.git.id" ng-click="git_connect()">Connect</button>
+                    <button class="btn pull-right" ng-if="user.gitid" ng-click="disconnect('git')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.gitid" ng-click="git_connect()">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.gitid"><b>{{user.gitid}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.github_login">Never</span>
+                        <time ng-if="user.times.github_login">{{user.times.github_login | date:'medium'}}</time>
+                    </p>
                     <h4>Git</h4>
                 </div>
                 <div class="well" ng-if="serverconf.google">
                     <img src="images/google.account_logo.png" class="account pull-left" style="padding-right: 10px;">
-                    <button class="btn pull-right" ng-if="user.git.id" ng-click="google_disconnect()">Disconnect</button>
-                    <button class="btn pull-right" ng-if="!user.git.id" ng-click="google_connect()">Connect</button>
+                    <button class="btn pull-right" ng-if="user.googleid" ng-click="disconnect('google')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.googleid" ng-click="google_connect()">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.googleid"><b>{{user.googleid}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.google_login">Never</span>
+                        <time ng-if="user.times.google_login">{{user.times.google_login | date:'medium'}}</time>
+                    </p>
                     <h4>Google</h4>
                 </div>
             </form>

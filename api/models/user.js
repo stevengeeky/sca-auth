@@ -2,6 +2,7 @@
 
 //contrib
 var Sequelize = require('sequelize');
+var JsonField = require('sequelize-json');
 var bcrypt = require('bcrypt');
 var winston = require('winston');
 
@@ -32,12 +33,30 @@ module.exports = function(sequelize, DataTypes) {
         googleid: Sequelize.STRING,
         gitid: Sequelize.STRING,
 
-        login_date: Sequelize.DATE,         //last login date
+        //login_date: Sequelize.DATE,         //last login date
+
+        //timestamps of various events (login timestamp, etc..)
+        /*
+        times: {
+            type: Sequelize.TEXT,
+            get: function () { 
+                var times = this.getDataValue('times');
+                console.dir(times);
+                if(typeof times == 'string') return JSON.parse(times);
+                return {};
+            },
+            set: function (times) {
+                return this.setDataValue('times', JSON.stringify(times));
+            }
+        },
+        */
+        times: JsonField(sequelize, 'User', 'times'),
         
         //use createdAt instead
         //signup_date: Sequelize.DATE,        //when user signed up.. 
 
         //jwt token scopes (authorization)
+        /*
         scopes: {
             type: Sequelize.TEXT,
             //defaultValue: "{}",  always initizlied to some default scope during creation, so this shouldn't be needed
@@ -55,6 +74,8 @@ module.exports = function(sequelize, DataTypes) {
                 return this.setDataValue('scopes', JSON.stringify(o));
             }
         },
+        */
+        scopes: JsonField(sequelize, 'User', 'scopes'),
 
         //prevent user from loggin in (usually temporarily)
         active: { type: Sequelize.BOOLEAN, defaultValue: true }
@@ -106,6 +127,12 @@ module.exports = function(sequelize, DataTypes) {
                 //logger.debug("checking password now"); 
                 if(!this.password_hash) return false; //no password, no go
                 return bcrypt.compareSync(password, this.password_hash);
+            },
+            updateTime: function(key) {
+                var times = this.get('times');
+                if(!times) times = {};
+                times[key] = new Date();
+                this.set('times', times); //not 100% if this is needed or not
             }
         }
     });

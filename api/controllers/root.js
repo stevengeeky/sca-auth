@@ -15,11 +15,9 @@ var jwt_helper = require('../jwt_helper');
 var db = require('../models');
 
 router.post('/refresh', jwt({secret: config.auth.public_key}), function(req, res, next) {
-    //console.log("looking for user id:"+req.user.sub);
     db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
         //return res.send(500, new Error("test"));
         if (!user) return next(new Error("can't find user id:"+req.user.sub));
-        //console.dir(user);
         var claim = jwt_helper.createClaim(user);
         var jwt = jwt_helper.signJwt(claim);
         return res.json({jwt: jwt});
@@ -68,7 +66,7 @@ router.get('/config', function(req, res) {
 router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
     db.User.findOne({
         where: {id: req.user.sub},
-        attributes: ['username', 'email', 'iucas', 'googleid', 'gitid'],
+        attributes: ['username', 'email', 'iucas', 'googleid', 'gitid', 'times'],
     }).then(function(user) {
         if(user) res.json(user);
         else res.status(404).end();

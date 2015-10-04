@@ -11,20 +11,31 @@
 
     <script src="config.js"></script>
     <script>
+
     function getParameterByName(name) {
         name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
         var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
             results = regex.exec(location.search);
         return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
     }
-    var app = angular.module('iucascb', ['app.config', 'ngCookies']);
+
+    //if user has jwt, send to server so that iucas account will be associated to the user account
+    var app = angular.module('iucascb', ['app.config', 'ngCookies', 'angular-jwt']);
+    app.config(['appconf', '$httpProvider', 'jwtInterceptorProvider', 
+    function(appconf, $httpProvider, jwtInterceptorProvider) {
+        jwtInterceptorProvider.tokenGetter = function(jwtHelper, config, $http) {
+            return localStorage.getItem(appconf.jwt_id);
+        }
+        $httpProvider.interceptors.push('jwtInterceptor');
+    }]);
+
     app.run(['$http', 'appconf', '$cookies', function($http, appconf, $cookies) {
-        console.log("(run) in iucascb");
+        //console.log("(run) in iucascb");
         var casticket = getParameterByName('casticket');
         $http.get(appconf.api+'/iucas/verify?casticket='+casticket)
         .success(function(data, status, headers, config) {
-            console.log("verify success");
-            console.dir(data);
+            //console.log("verify success");
+            //console.dir(data);
             if(data.jwt) {
                 localStorage.setItem(appconf.jwt_id, data.jwt);
             }
@@ -32,21 +43,22 @@
                 document.location = './#/setpass';
             } else {
                 //TODO - this is pretty much just a duplicate of js/app.js redirector.. how can I refactor it?
+                /*
                 var redirect = localStorage.getItem('post_auth_redirect');
                 if(redirect) {
-                    console.log("redirecting to "+redirect);
                     localStorage.removeItem('post_auth_redirect');
                 } else {
-                    console.log("post_auth_redirect not set.. using default_redirect_url:"+appconf.default_redirect_url);
-                    //$location.path("/user")
                     redirect = appconf.default_redirect_url;
                 }
-                window.location = redirect;
+                */
+                var redirect = localStorage.getItem('post_auth_redirect');
+                if(redirect[0] == '#') redirect = './'+redirect; //try /auth/# instead of /auth/iucascb.html/#
+                document.location = redirect;
             }
         })
         .error(function(data, status, headers, config) {
-            //console.log("failed");
-            //console.dir(data);
+            console.log("token verification failed");
+            console.dir(data);
             var messages = [{
                 type: 'error',
                 title: 'Failed to verify IU CAS Ticket',

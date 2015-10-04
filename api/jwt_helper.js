@@ -30,7 +30,7 @@ exports.createClaim = function(user) {
         "exp": (Date.now() + config.auth.ttl)/1000,
         "iat": (Date.now())/1000,
         "scopes": user.scopes,
-        "sub": user.id, //can't use user.username because it might not used.
+        "sub": String(user.id), //can't use user.username because it might not used. convert to string for better compatibility
 
         //this is not part of official jwt, but this allows me to do stateless xsrf check via double-submit
         //"xsrf": uuid.v4()

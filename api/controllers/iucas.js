@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var request = require('request');
 var winston = require('winston');
+var jwt = require('express-jwt');
 
 //mine
 var config = require('../config/config');
@@ -19,6 +20,20 @@ function finduserByiucasid(id, done) {
             return done(null, false, { message: "Couldn't find registered IU CAS ID:"+id });
         }
         return done(null, user);
+    });
+}
+
+function associate(jwt, uid, res) {
+    logger.info("associating user with iucas id:"+uid);
+    db.User.findOne({where: {id: jwt.sub}}).then(function(user) {
+        if(!user) throw new Error("couldn't find user record with jwt.sub:"+uid);
+        user.iucas = uid;
+        user.save().then(function() {
+            var messages = [{type: "success", /*title: "IUCAS ID Associated",*/ message: "We have associated IU ID:"+uid+" to your account"}];
+            res.cookie('messages', JSON.stringify(messages), {path: '/'});
+            return res.json({status: "ok"}); //probably ignored.. but
+            //return res.redirect(config.iucas.home_url+'#/settings');
+        });
     });
 }
 
@@ -55,20 +70,20 @@ function register_newuser(uid, res) {
 }
 
 function return_jwt(user, res) {
-    var claim = jwt_helper.createClaim(user);
-    var jwt = jwt_helper.signJwt(claim);
-
-    var need_setpass = (!user.password_hash);
-
-    return res.json({jwt:jwt, need_setpass: need_setpass});
+    user.updateTime('iucas_login');
+    user.save().then(function() {
+        var claim = jwt_helper.createClaim(user);
+        var jwt = jwt_helper.signJwt(claim);
+        var need_setpass = (!user.password_hash);
+        return res.json({jwt:jwt, need_setpass: need_setpass});
+    });
 }
 
-router.get('/verify', function(req, res, next) {
+router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: false}), function(req, res, next) {
     var ticket = req.query.casticket;
     var casurl = config.iucas.home_url;
     
-    logger.debug("validating cas ticket:"+ticket+" casurl:"+casurl);
-    //TODO should I make this configurable?
+    //logger.debug("validating cas ticket:"+ticket+" casurl:"+casurl);
     request('https://cas.iu.edu/cas/validate?cassvc=IU&casticket='+ticket+'&casurl='+casurl, function (err, response, body) {
         if(err) return next(err);
         if (response.statusCode == 200) {
@@ -81,7 +96,17 @@ router.get('/verify', function(req, res, next) {
                         return res.end();
                     }
                     if(!user) {
-                        register_newuser(uid, res);
+                        if(req.user) {
+                            //If user is already logged in, but no iucas associated yet.. then auto-associate.
+                            //If someone with only local account let someone else login via iucas on the same browser, while the first person is logged in,
+                            //that someone else can then start using the first person's account after he leaves the computer. However, user intentionally
+                            //visiting /auth page when the first user is already logged into a system is very unlikely, since the user most likely will
+                            //sign out so that second user can login. also, if this situation to ever occur, user should be presented with 
+                            //"we have associated your account" message so that first user should be aware of this happening
+                            associate(req.user, uid, res);
+                        } else {
+                            register_newuser(uid, res);
+                        }
                     } else {
                         //all good. issue token
                         logger.debug("iucas authentication successful. iu id:"+uid);
@@ -97,6 +122,18 @@ router.get('/verify', function(req, res, next) {
             next(new Error(body));
         }
     })
+});
+
+router.put('/disconnect', jwt({secret: config.auth.public_key}), function(req, res, next) {
+    db.User.findOne({
+        where: {id: req.user.sub}
+    }).then(function(user) {
+        if(!user) res.status(401).end();
+        user.iucas = null;
+        user.save().then(function() {
+            res.json({message: "Successfully disconnected IUCAS account."});
+        });    
+    });
 });
 
 module.exports = router;

@@ -11,7 +11,6 @@ var jwt = require('express-jwt');
 var config = require('../config/config');
 var logger = new winston.Logger(config.logger.winston);
 var jwt_helper = require('../jwt_helper');
-
 var db = require('../models');
 
 passport.use(new passport_localst(
@@ -41,7 +40,7 @@ passport.use(new passport_localst(
 ));
 
 router.post('/auth', function(req, res, next) {
-    logger.debug("authentated local user");
+    //logger.debug("authentated local user");
     passport.authenticate('local', function(err, user, info) {
         if (err) { return next(err); }
         if (!user) { 
@@ -50,14 +49,16 @@ router.post('/auth', function(req, res, next) {
         }
         var claim = jwt_helper.createClaim(user);
         var jwt = jwt_helper.signJwt(claim);
-        return res.json({message: "Login Success!", jwt: jwt});
+        user.updateTime('local_login');
+        user.save().then(function() {
+            res.json({message: "Login Success!", jwt: jwt});
+        });
     })(req, res, next);
 });
 
-
 //used to setpassword if password_hash is empty or update exiting password (with a valid current password)
 router.put('/setpass', jwt({secret: config.auth.public_key}), function(req, res, next) {
-    db.User.findOne({where: {username: req.user.sub}}).then(function(user) {
+    db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
         logger.debug("setting password for sub:"+req.user.sub);
         if(user) {
             if(user.password_hash) {
@@ -69,6 +70,7 @@ router.put('/setpass', jwt({secret: config.auth.public_key}), function(req, res,
             }
             user.setPassword(req.body.password, function(err) {
                 if(err) return next(err);
+                user.updateTime('password_reset');
                 user.save().then(function() {
                     res.json({status: "ok", message: "Password reset successfully."});
                 });

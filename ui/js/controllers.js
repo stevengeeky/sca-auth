@@ -55,8 +55,8 @@ controllers.directive('compareTo', function() {
 });
 */
 
-controllers.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+controllers.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector', 'cookie2toaster',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector, cookie2toaster) {
 
     $scope.title = appconf.title;
     $scope.logo_400_url = appconf.logo_400_url;
@@ -66,28 +66,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
         toaster.pop('note', 'You are already logged in');
         //DEBUG
         var token = jwtHelper.decodeToken(jwt);
-        console.log(token);
-    }
-
-    //sometime we get error messages via cookie (like iucas registration failurer)
-    var messages = $cookies.get("messages");
-    if(messages) {
-        JSON.parse(messages).forEach(function(message) {
-            if(message.type == "error") {
-                //make it sticky (show close button and no-timeout)
-                toaster.pop({
-                    type: message.type, 
-                    title: message.title, 
-                    body: message.message, 
-                    showCloseButton: true, timeout: 0
-                });
-            } else {
-                toaster.pop(message.type, message.title, message.message);
-            }
-        });
-        //why path="/"? Without it, it tries to remove cookie under just /auth path and not find messges
-        //that comes from other apps. (make sure to set cookie under "/" on your other apps)
-        $cookies.remove("messages", {path: "/"}); 
+        //console.log(token);
     }
 
     $scope.userpass = {};
@@ -96,8 +75,9 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            //TODO - how should I forward success message?
-            if(!redirector.go()) {
+            if(redirector.go()) {
+                //TODO - set success messaga via cookie - if user is redirecting out of auth ui
+            } else {
                 toaster.success(data.message);
             }
         })
@@ -110,8 +90,10 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
         //I can't pass # for callback somehow (I don't know how to make it work, or iucas removes it)
         //so let's let another html page handle the callback, do the token validation through iucas and generate the jwt 
         //and either redirect to profile page (default) or force user to setup user/pass if it's brand new user
-        var casurl = 'https://soichi7.ppa.iu.edu/auth/iucascb.html';
-        window.location = "https://cas.iu.edu/cas/login?cassvc=IU&casurl="+casurl;
+        //var casurl = 'https://soichi7.ppa.iu.edu/auth/iucascb.html';
+        var casurl = window.location.origin+window.location.pathname+'iucascb.html';
+        //console.log("casurl:"+casurl);
+        window.location = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
     }
 
     $scope.test = function() {
@@ -139,15 +121,15 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 }]);
 
-controllers.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+controllers.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
     localStorage.removeItem(appconf.jwt_id);
     $location.path("/signin");
     toaster.success("Good Bye!");
 }]);
 
-controllers.controller('SignupController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+controllers.controller('SignupController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
     $scope.alerts = [];
 
     //stores form
@@ -168,8 +150,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routePar
     }
 }]);
 
-controllers.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+controllers.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
     $scope.alerts = [];
 
     //stores form
@@ -213,8 +195,8 @@ function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $loca
     redirector.go();
 }]);
 */
-app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 
-function($scope, appconf, $route, toaster, $http, profile, serverconf) {
+app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'cookie2toaster',
+function($scope, appconf, $route, toaster, $http, profile, serverconf, cookie2toaster) {
     $scope.public_profile = profile.pub;
     $scope.user = null;
     $scope.form_password = {};
@@ -250,20 +232,28 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf) {
             console.log("password confirmation fail");
         }
     }
-    $scope.iucas_disconnect = function() {
-        toaster.info("iucas_disconnect todo");
+    $scope.disconnect = function(type) {
+        $http.put(appconf.api+'/'+type+'/disconnect')
+        .success(function(data) {
+            toaster.success(data.message);
+            switch(type) {
+            case "iucas": delete $scope.user.iucas; break;
+            case "git": delete $scope.user.gitid; break;
+            case "google": delete $scope.user.googleid; break;
+            }
+        })
+        .error(function(data) {
+            toaster.error(data.message);
+        });
     }
     $scope.iucas_connect = function() {
-        toaster.info("iucas_connect todo");
-    }
-    $scope.git_disconnect = function() {
-        toaster.info("git_disconnect todo");
+        localStorage.setItem('post_auth_redirect', window.location.href);
+        var casurl = window.location.origin+window.location.pathname+'iucascb.html';
+        //console.log("casurl:"+casurl);
+        window.location = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
     }
     $scope.git_connect = function() {
         toaster.info("git_connect todo");
-    }
-    $scope.google_disconnect = function() {
-        toaster.info("google_disconnect todo");
     }
     $scope.google_connect = function() {
         toaster.info("google_connect todo");
@@ -312,15 +302,15 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf) {
                 break;
             */
             case 'settings':
-                $scope.settings_menu = m;
+                $scope.settings_menu = m.submenu;
                 break;
             }
         });
     });
 }]);
 
-controllers.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$cookies', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $cookies, $routeParams, $location, redirector) {
+controllers.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
     //TODO
 }]);
 

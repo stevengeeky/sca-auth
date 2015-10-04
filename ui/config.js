@@ -8,23 +8,23 @@ angular.module('app.config', [])
 .constant('appconf', {
     title: 'Authentication Service',
     admin_email: 'hayashis@iu.edu',
-    logo_400_url: 'images/sample.jpg',
+    logo_400_url: 'images/soichidev.jpg',
     //logo_400_url: 'images/meshconfig_logo.jpg',
-    version: '0.0.1',
 
     //URL for auth service API
-    api: 'https://soichi7.ppa.iu.edu/api/auth',
+    api: '/api/auth',
 
     //shared servive api and ui urls (for menus and stuff)
-    shared_api: 'https://soichi7.ppa.iu.edu/api/shared',
-    shared_url: 'https://soichi7.ppa.iu.edu/shared',
+    shared_api: '/api/shared',
+    shared_url: '/shared',
 
-    profile_api: 'https://soichi7.ppa.iu.edu/api/profile',
+    profile_api: '/api/profile',
 
     //default location to redirect after successful login
-    default_redirect_url: 'https://soichi7.ppa.iu.edu/profile', 
+    default_redirect_url: '/profile', 
     //default_redirect_url: '#/welcome',
 
-    jwt_id: 'jwt'
+    jwt_id: 'jwt',
+    iucas_url: 'https://cas.iu.edu/cas/login',
 });
 
