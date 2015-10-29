@@ -4,3 +4,4 @@ node_modules
 api/config
 nohup*.out
 **/*.log
+debug

@@ -34,3 +34,7 @@ body {
 .settings li.heading {
   background-color: #eee;
 }
+.settings li.heading-clickable:hover {
+  cursor: pointer;
+  background-color: #ccc;
+}

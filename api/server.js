@@ -51,7 +51,7 @@ app.use(function(err, req, res, next) {
 app.use(expressWinston.errorLogger(config.logger.winston));
 app.use(function(err, req, res, next) {
     logger.info(err);
-    logger.info(err.stack);
+    if(err.stack) logger.info(err.stack);
     res.status(err.status || 500);
     res.json({message: err.message, /*stack: err.stack*/}); //let's hide callstack for now
 });

@@ -1,15 +1,4 @@
-(function() {
 'use strict';
-
-/*
- * Right now, we are going to have a single module for our app which contains
- * all controllers. In the future, we should refactor into multiple modules. When I do, don't forget
- * to add it to app.js's module list
- * */
-
-var controllers = angular.module('authControllers', [
-    'ui.bootstrap',
-]);
 
 //just a service to load all users from auth service
 app.factory('serverconf', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
@@ -19,7 +8,7 @@ app.factory('serverconf', ['appconf', '$http', 'jwtHelper', function(appconf, $h
     });
 }]);
 
-controllers.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
+app.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
     var jwt = localStorage.getItem(appconf.jwt_id);
     var user = jwtHelper.decodeToken(jwt);
     var pub = {fullname: null};
@@ -36,8 +25,38 @@ controllers.factory('profile', ['appconf', '$http', 'jwtHelper', function(appcon
     }
 }]);
 
+//load menu and profile by promise chaining
+//http://www.codelord.net/2015/09/24/$q-dot-defer-youre-doing-it-wrong/
+//https://www.airpair.com/angularjs/posts/angularjs-promises
+//TODO - /menu/top and /menu/settings should loaded simultanously.. and somehow resolve when both are loaded
+app.factory('menu', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
+    var menu = {};
+    return $http.get(appconf.shared_api+'/menu/top').then(function(res) {
+        menu.top = res.data;
+        
+        //then load user profile (if we have jwt)
+        var jwt = localStorage.getItem(appconf.jwt_id);
+        if(!jwt)  return menu;
+        var user = jwtHelper.decodeToken(jwt);
+        //TODO - jwt could be invalid 
+        return $http.get(appconf.profile_api+'/public/'+user.sub);
+    }, function(err) {
+        console.log("failed to load menu");
+    }).then(function(res) {
+        //TODO - this function is called with either valid profile, or just menu if jwt is not provided... only do following if res is profile
+        //if(res.status != 200) return $q.reject("Failed to load profile");
+        menu._profile = res.data;
+        return $http.get(appconf.shared_api+'/menu/settings').then(function(res) {
+            menu.settings = res.data;
+            return menu;
+        });
+    }, function(err) {
+        console.log("couldn't load profile");
+    });
+}]);
+
 /*
-controllers.directive('compareTo', function() {
+app.directive('compareTo', function() {
     return {
         require: "ngModel",
         scope: {
@@ -55,11 +74,12 @@ controllers.directive('compareTo', function() {
 });
 */
 
-controllers.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector', 'cookie2toaster',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector, cookie2toaster) {
+app.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage) {
 
     $scope.title = appconf.title;
     $scope.logo_400_url = appconf.logo_400_url;
+    scaMessage.show(toaster);
 
     var jwt = localStorage.getItem(appconf.jwt_id);
     if(jwt != null && !jwtHelper.isTokenExpired(jwt)) {
@@ -69,17 +89,20 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         //console.log(token);
     }
 
+    //decide where to go after auth
+    var redirect = sessionStorage.getItem('auth_redirect');
+    if(!redirect) redirect = document.referrer;
+    if(!redirect) redirect = appconf.default_redirect_url;
+
     $scope.userpass = {};
     $scope.submit = function() {
         //console.dir($scope.userpass);
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .success(function(data, status, headers, config) {
+            scaMessage.success(data.message);
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            if(redirector.go()) {
-                //TODO - set success messaga via cookie - if user is redirecting out of auth ui
-            } else {
-                toaster.success(data.message);
-            }
+            sessionStorage.removeItem('auth_redirect');
+            document.location = redirect;
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
@@ -90,10 +113,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         //I can't pass # for callback somehow (I don't know how to make it work, or iucas removes it)
         //so let's let another html page handle the callback, do the token validation through iucas and generate the jwt 
         //and either redirect to profile page (default) or force user to setup user/pass if it's brand new user
-        //var casurl = 'https://soichi7.ppa.iu.edu/auth/iucascb.html';
         var casurl = window.location.origin+window.location.pathname+'iucascb.html';
-        //console.log("casurl:"+casurl);
-        window.location = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
+        window.location.href = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
     }
 
     $scope.test = function() {
@@ -121,28 +142,34 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     }
 }]);
 
-controllers.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
+app.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams) {
     localStorage.removeItem(appconf.jwt_id);
-    $location.path("/signin");
     toaster.success("Good Bye!");
+    //$location.path("/signin");
+    window.location = "#/signin";
 }]);
 
-controllers.controller('SignupController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
-    $scope.alerts = [];
+app.controller('SignupController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage', 
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage) {
+    scaMessage.show(toaster);
+    //$scope.alerts = [];
 
     //stores form
     $scope.form = {};
+
+    //decide where to go after signup
+    var redirect = sessionStorage.getItem('auth_redirect');
+    if(!redirect) redirect = document.referrer;
+    if(!redirect) redirect = appconf.default_redirect_url;
 
     $scope.submit = function() {
         $http.post(appconf.api+'/signup', $scope.form)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            //TODO - how should I forward success message?
-            if(!redirector.go()) {
-                toaster.success(data.message);
-            }
+                //TODO - set success messaga via cookie - if user is redirecting out of auth ui
+                //toaster.success(data.message);
+                document.location = redirect;
         })
         .error(function(data, status, headers, config) {
             toaster.error(data.message);
@@ -150,9 +177,10 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     }
 }]);
 
-controllers.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
-    $scope.alerts = [];
+app.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage) {
+    scaMessage.show(toaster);
+    //$scope.alerts = [];
 
     //stores form
     $scope.form = {};
@@ -165,14 +193,17 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         toaster.error(data.message);
     }); 
 
+    //decide where to go after setting password
+    var redirect = sessionStorage.getItem('auth_redirect');
+    if(!redirect) redirect = document.referrer;
+    if(!redirect) redirect = appconf.default_redirect_url;
+
     $scope.submit = function() {
         $http.put(appconf.api+'/local/setpass', {password: $scope.form.password})
         .success(function(data, status, headers, config) {
-            //localStorage.setItem(appconf.jwt_id, data.jwt);
-            //TODO - how should I forward success message?
-            if(!redirector.go()) {
-                toaster.success(data.message);
-            }
+            //TODO - set success messaga via cookie - if user is redirecting out of auth ui
+            //toaster.success(data.message);
+            document.location = redirect;
         })
         .error(function(data, status, headers, config) {
             console.dir(data);
@@ -181,49 +212,35 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     }
 }]);
 
-/*
-//right now, this is only used by IUCAS only. 
-controllers.controller('ReceiveJWTController', ['$scope', 'appconf', '$route', '$routeParams', 'toaster', '$http', 'jwtHelper', '$location', '$window', 'redirector', 
-function($scope, appconf, $route, $routeParams, toaster, $http, jwtHelper, $location, $window, redirector) {
-    if($routeParams.jwt) {
-        console.log("received jwt:"+$routeParams.jwt);
-        localStorage.setItem(appconf.jwt_id, $routeParams.jwt);
-        //no need to do this because we are directing to somewhere else anyway
-        //also, modifying the $location.search causes this controller to fire twice.
-        //$location.search('jwt', null); //remove jwt from url (just to hide it from the user..)
-    }
-    redirector.go();
-}]);
-*/
-app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'cookie2toaster',
-function($scope, appconf, $route, toaster, $http, profile, serverconf, cookie2toaster) {
+app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'menu', 'jwtHelper', 'scaMessage',
+function($scope, appconf, $route, toaster, $http, profile, serverconf, menu, jwtHelper, scaMessage) {
     $scope.public_profile = profile.pub;
     $scope.user = null;
     $scope.form_password = {};
     $scope.password_strength = {};
+    scaMessage.show(toaster);
 
-    serverconf.then(function(_serverconf) {
-        $scope.serverconf = _serverconf;
-    });
+    //for debug pane
+    var jwt = localStorage.getItem(appconf.jwt_id);
+    var token = jwtHelper.decodeToken(jwt);
+    $scope.debug = {jwt: token};
 
-    /*
-    $scope.form_account = null; 
+    serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
+    menu.then(function(_menu) { $scope.menu = _menu; });
 
-    $http.get(appconf.api+'/settings')
-    .success(function(profile, status, headers, config) {
-        $scope.form_profile  = profile;
-    })
-    .error(function(data, status, headers, config) {
-        if(data && data.message) {
-            toaster.error(data.message);
-        }
-    });
-    */
     $scope.submit_password = function() {
         if($scope.form_password.new == $scope.form_password.new_confirm) {
             $http.put(appconf.api+'/local/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
             .success(function(data, status, headers, config) {
-                toaster.success(data.message);
+                var redirect = sessionStorage.getItem('auth_settings_redirect');
+                if(redirect) {
+                    sessionStorage.removeItem('auth_settings_redirect');
+                    //TODO - set success messaga via cookie - if user is redirecting out of auth ui
+                    //toaster.success(data.message);
+                    document.location = redirect;
+                } else {
+                    toaster.success(data.message);
+                }
             })
             .error(function(data, status, headers, config) {
                 toaster.error(data.message);
@@ -247,9 +264,9 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, cookie2to
         });
     }
     $scope.iucas_connect = function() {
-        localStorage.setItem('post_auth_redirect', window.location.href);
+        //localStorage.setItem('post_auth_redirect', window.location.href);
+        //scaRedirector.push(window.location.href);
         var casurl = window.location.origin+window.location.pathname+'iucascb.html';
-        //console.log("casurl:"+casurl);
         window.location = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
     }
     $scope.git_connect = function() {
@@ -279,39 +296,11 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, cookie2to
     .success(function(info) {
         $scope.user = info;
     });
-    /*
-    $http.get(appconf.api+'/config')
-    .success(function(config) {
-        console.dir(config);
-        $scope.server_config = config;
-    });
-    */
-
-    //load menu
-    $http.get(appconf.shared_api+'/menu')
-    .success(function(menu) {
-        $scope.menu = menu;
-        menu.forEach(function(m) {
-            switch(m.id) {
-            case 'top':
-                $scope.top_menu = m;
-                break;
-            /*
-            case 'topright':
-                $scope.topright_menu = m;
-                break;
-            */
-            case 'settings':
-                $scope.settings_menu = m.submenu;
-                break;
-            }
-        });
-    });
 }]);
 
-controllers.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'redirector',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, redirector) {
+app.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', 
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage) {
+    scaMessage.show(toaster);
     //TODO
 }]);
 
-})(); //scope barrier

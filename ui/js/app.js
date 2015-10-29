@@ -10,7 +10,7 @@ var app = angular.module('app', [
     'angular-loading-bar',
     'angular-jwt',
     'validation.match',
-    'authControllers', //contains searchControllers - others?
+    'ui.bootstrap',
     'sca-shared',
 ]);
 
@@ -36,6 +36,7 @@ app.factory('jwt', ['appconf', '$cookies', 'jwtHelper', function(appconf, $cooki
 }]);
 */
 
+/*replaced by scaRedirector
 //redirecto to whevever user needs to go after auccessful login
 app.factory('redirector', ['$location', '$routeParams', 'appconf', 
 function($location, $routeParams, appconf) {
@@ -57,16 +58,6 @@ function($location, $routeParams, appconf) {
         go: function() {
             var redirect = localStorage.getItem('post_auth_redirect');
             localStorage.removeItem('post_auth_redirect');
-            /*
-            if(redirect) {
-                console.log("redirecting to "+redirect);
-                localStorage.removeItem('post_auth_redirect');
-            } else {
-                console.log("post_auth_redirect not set.. using default_redirect_url:"+appconf.default_redirect_url);
-                //$location.path("/user")
-                redirect = appconf.default_redirect_url;
-            }
-            */
             window.location = redirect;
 
             //if url starts with #, then it's internal redirect
@@ -75,7 +66,9 @@ function($location, $routeParams, appconf) {
         }
     }
 }]);
+*/
 
+/*
 app.factory('cookie2toaster', ['$cookies', 'toaster', function($cookies, toaster) {
     //sometime we get error messages via cookie (like iucas registration failurer)
     var messages = $cookies.get("messages");
@@ -99,6 +92,7 @@ app.factory('cookie2toaster', ['$cookies', 'toaster', function($cookies, toaster
     }
     return null;
 }]);
+*/
 
 /*
 //use this service if you want to keep renewing jwt
@@ -164,6 +158,13 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         controller: 'SettingsController',
         requiresLogin: true
     })
+    /*
+    .when('/debug', {
+        templateUrl: 't/debug.html',
+        controller: 'DebugController',
+        requiresLogin: true
+    })
+    */
     .otherwise({
         redirectTo: '/signin'
     });

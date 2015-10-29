@@ -2,5 +2,6 @@
 
 pm2 delete auth
 pm2 start auth.js --watch --ignore-watch="\.log$"
-
-pm2 logs auth
+pm2 save
+ 
+#pm2 logs auth

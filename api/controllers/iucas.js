@@ -32,12 +32,11 @@ function associate(jwt, uid, res) {
             var messages = [{type: "success", /*title: "IUCAS ID Associated",*/ message: "We have associated IU ID:"+uid+" to your account"}];
             res.cookie('messages', JSON.stringify(messages), {path: '/'});
             return res.json({status: "ok"}); //probably ignored.. but
-            //return res.redirect(config.iucas.home_url+'#/settings');
         });
     });
 }
 
-function register_newuser(uid, res) {
+function register_newuser(uid, res, next) {
     logger.info("registering new user with iucas id:"+uid);
     db.User.findOne({where: {'username': uid}}).then(function(user) {
         //if(err) return next(err);
@@ -48,12 +47,19 @@ function register_newuser(uid, res) {
             //TODO - instead of showing this error message, maybe I should redirect user to
             //a page to force user to login via user/pass, then associate the IU CAS IU 
             //once user logs in 
+            /*
             var messages = [{type: "error", title: "Registration Failed", message: "This is the first time you login with IU CAS account, "+
                 "but we couldn't register this account since the username '"+uid+"' is already registered in our system. "+
                 "If you have already registered with username / password, please login with username / password first, "+
                 "then associate your IU CAS account under your account settings."}];
             res.cookie('messages', JSON.stringify(messages), {path: '/'});
             return res.redirect(config.iucas.home_url);
+            */
+            next({message: 
+                "This is the first time you login with IU CAS account, "+
+                "but we couldn't register this account since the username '"+uid+"' is already registered in our system. "+
+                "If you have already registered with username / password, please login with username / password first, "
+            });
         } else {
             //brand new user - go ahead and create a new account using IU id as sca user id
             db.User.create({
@@ -81,7 +87,11 @@ function return_jwt(user, res) {
 
 router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: false}), function(req, res, next) {
     var ticket = req.query.casticket;
-    var casurl = config.iucas.home_url;
+
+    //guess casurl using referer - TODO - should I use cookie and pass it from the UI method begin_iucas() instead?
+    //var casurl = config.iucas.home_url;
+    if(!req.headers.referer) return next(new Error("Referer not set in header.."));
+    casurl = req.headers.referer;
     
     //logger.debug("validating cas ticket:"+ticket+" casurl:"+casurl);
     request('https://cas.iu.edu/cas/validate?cassvc=IU&casticket='+ticket+'&casurl='+casurl, function (err, response, body) {
@@ -105,7 +115,7 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
                             //"we have associated your account" message so that first user should be aware of this happening
                             associate(req.user, uid, res);
                         } else {
-                            register_newuser(uid, res);
+                            register_newuser(uid, res, next);
                         }
                     } else {
                         //all good. issue token

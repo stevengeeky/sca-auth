@@ -23,3 +23,6 @@ In AngularJS, you can implement your jwtInterceptor so that if JWT token is expi
 Implement #/forgotpass
 Fix: trying to access https://soichi7.ppa.iu.edu/auth/#/settings without first login, forced to login, then jump back to /settings, it goes to https://soichi7.ppa.iu.edu/settings instead.
 
+If a user has multiple account, trying to associate with same IUCAS account ends up with basically logging in as the user account that's already associated with the IU CAS account.
+
+iucascb.html should never be set to document.referrer because I don't want auth service to redirect back to it after authentication.. but that's currently happning.

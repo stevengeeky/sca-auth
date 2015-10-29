@@ -9,9 +9,10 @@
     <script src="bower_components/angular-jwt/dist/angular-jwt.min.js"></script>
     <script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
 
+    <script src="/shared/shared.js"></script>
     <script src="config.js"></script>
-    <script>
 
+    <script>
     function getParameterByName(name) {
         name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
         var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -20,7 +21,7 @@
     }
 
     //if user has jwt, send to server so that iucas account will be associated to the user account
-    var app = angular.module('iucascb', ['app.config', 'ngCookies', 'angular-jwt']);
+    var app = angular.module('iucascb', ['app.config', 'ngCookies', 'angular-jwt', 'sca-shared']);
     app.config(['appconf', '$httpProvider', 'jwtInterceptorProvider', 
     function(appconf, $httpProvider, jwtInterceptorProvider) {
         jwtInterceptorProvider.tokenGetter = function(jwtHelper, config, $http) {
@@ -29,43 +30,32 @@
         $httpProvider.interceptors.push('jwtInterceptor');
     }]);
 
-    app.run(['$http', 'appconf', '$cookies', function($http, appconf, $cookies) {
+    app.run(['$http', 'appconf', '$cookies', 'scaMessage',
+    function($http, appconf, $cookies, scaMessage) {
         //console.log("(run) in iucascb");
         var casticket = getParameterByName('casticket');
         $http.get(appconf.api+'/iucas/verify?casticket='+casticket)
-        .success(function(data, status, headers, config) {
-            //console.log("verify success");
-            //console.dir(data);
-            if(data.jwt) {
-                localStorage.setItem(appconf.jwt_id, data.jwt);
-            }
-            if(data.need_setpass) {
-                document.location = './#/setpass';
+        .then(function(res) {
+            scaMessage.success('Successfully signed in with IU CAS!');
+            localStorage.setItem(appconf.jwt_id, res.data.jwt);
+            if(res.data.need_setpass) {
+                window.location = './#/setpass';
             } else {
-                //TODO - this is pretty much just a duplicate of js/app.js redirector.. how can I refactor it?
-                /*
-                var redirect = localStorage.getItem('post_auth_redirect');
-                if(redirect) {
-                    localStorage.removeItem('post_auth_redirect');
-                } else {
-                    redirect = appconf.default_redirect_url;
-                }
-                */
-                var redirect = localStorage.getItem('post_auth_redirect');
-                if(redirect[0] == '#') redirect = './'+redirect; //try /auth/# instead of /auth/iucascb.html/#
-                document.location = redirect;
+                var redirect = sessionStorage.getItem('auth_redirect');
+                if(!redirect) redirect = './#/settings'; //we really don't want to get stuck on iucascb.html
+                //document.location = redirect;
+                window.location = redirect; 
             }
-        })
-        .error(function(data, status, headers, config) {
+        }, function(res) {
             console.log("token verification failed");
-            console.dir(data);
-            var messages = [{
-                type: 'error',
-                title: 'Failed to verify IU CAS Ticket',
-                message: data.msg
-            }];
-            $cookies.put('messages', JSON.stringify(messages), {path: '/'});
-            document.location = './';  //move to index page
+            console.dir(res.data);
+            if(res.data.message) {
+                scaMessage.error(res.data.message);
+            } else {
+                scaMessage.error('Failed to login with IU CAS :(');
+            }
+            //document.location = './';  //move to index page
+            window.location = './';
         }); 
     }]);
     </script>
