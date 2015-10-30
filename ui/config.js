@@ -12,16 +12,16 @@ angular.module('app.config', [])
     //logo_400_url: 'images/meshconfig_logo.jpg',
 
     //URL for auth service API
-    api: '/api/auth',
+    api: '../api/auth',
 
     //shared servive api and ui urls (for menus and stuff)
-    shared_api: '/api/shared',
-    shared_url: '/shared',
+    shared_api: '../api/shared',
+    shared_url: '../shared',
 
-    profile_api: '/api/profile',
+    profile_api: '../api/profile',
 
     //default location to redirect after successful login
-    default_redirect_url: '/profile', 
+    default_redirect_url: '../profile', 
     //default_redirect_url: '#/welcome',
 
     jwt_id: 'jwt',
