@@ -8,7 +8,6 @@ var app = angular.module('app', [
     'toaster',
     'angular-loading-bar',
     'angular-jwt',
-    'validation.match',
     'ui.bootstrap',
     'sca-shared',
 ]);
