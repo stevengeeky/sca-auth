@@ -2,7 +2,6 @@
 
 var app = angular.module('app', [
     'app.config',
-    'ngSanitize',
     'ngRoute',
     'ngAnimate',
     'ngCookies',
