@@ -4,7 +4,7 @@ var request = require('supertest')
 var assert = require('assert');
 
 //mine
-var config = require('../config/config');
+var config = require('../config');
 var db = require('../models');
 var app = require('../server').app;
 

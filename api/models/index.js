@@ -4,10 +4,23 @@ var fs        = require('fs');
 var path      = require('path');
 var Sequelize = require('sequelize');
 var basename  = path.basename(module.filename);
-var env       = process.env.NODE_ENV || 'development';
-var config    = require(__dirname + '/../config/config.json')[env];
-var sequelize = new Sequelize(config.database, config.username, config.password, config);
-var db        = {};
+//var env       = process.env.NODE_ENV || 'development';
+//var db        = {};
+var config    = require('../config');
+if(typeof config.db === 'string') {
+    var sequelize = new Sequelize(config.db, {
+        /*
+        logging: function(str) {
+            //ignore for now..
+        }
+        */
+        logging: false
+    });
+} else {
+    //assume object
+    var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, config.db);
+}
+var db = {};
 
 fs
   .readdirSync(__dirname)

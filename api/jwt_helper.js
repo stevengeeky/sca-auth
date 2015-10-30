@@ -3,7 +3,7 @@ var jwt = require('jsonwebtoken');
 var fs = require('fs');
 var uuid = require('node-uuid');
 
-var config = require('./config/config');
+var config = require('./config');
 var service_name = "auth";
 
 //var jwt_publickey = fs.readFileSync('./config/auth.pub', {encoding: 'ascii'});

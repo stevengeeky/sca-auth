@@ -16,7 +16,7 @@ var winston = require('winston');
 var expressWinston = require('express-winston');
 
 //mine
-var config = require('./config/config');
+var config = require('./config');
 var logger = new winston.Logger(config.logger.winston);
 var db = require('./models');
 

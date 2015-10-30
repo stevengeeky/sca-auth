@@ -8,7 +8,7 @@ var winston = require('winston');
 var jwt = require('express-jwt');
 
 //mine
-var config = require('../config/config');
+var config = require('../config');
 var logger = new winston.Logger(config.logger.winston);
 var jwt_helper = require('../jwt_helper');
 
@@ -27,22 +27,6 @@ router.post('/refresh', jwt({secret: config.auth.public_key}), function(req, res
 router.get('/health', function(req, res) {
     res.json({status: 'ok'});
 });
-/*
-router.get('/config', function(req, res) {
-    var c = {whatever: 'hello'};
-    if(config.local) {
-        c.local = {
-            //TODO
-        };
-    }
-    if(config.iucas) {
-        c.iucas = {
-            //TODO
-        };
-    }
-    res.json(c);    
-});
-*/
 
 //server side config need to render ui (public)
 router.get('/config', function(req, res) {
@@ -72,18 +56,5 @@ router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
         else res.status(404).end();
     });
 });
-
-/*
-//return id, username, email of all users (used by user selector or such)
-router.get('/users', jwt({secret: config.auth.public_key}), function(req, res) {
-    db.User.findAll({
-        //TODO what if local username/email logins are disabled? 
-        //I should return casid or such instead
-        attributes: ['id', 'username', 'email'],
-    }).then(function(users) {
-        res.json(users);
-    });
-});
-*/
 
 module.exports = router;
