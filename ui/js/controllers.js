@@ -74,8 +74,8 @@ app.directive('compareTo', function() {
 });
 */
 
-app.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage) {
+app.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', '$sce',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage, $sce) {
 
     $scope.title = appconf.title;
     $scope.logo_400_url = appconf.logo_400_url;
@@ -83,7 +83,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
 
     var jwt = localStorage.getItem(appconf.jwt_id);
     if(jwt != null && !jwtHelper.isTokenExpired(jwt)) {
-        toaster.pop('note', 'You are already logged in');
+        toaster.pop({type: 'note', body: 'You are already signed in. <a href="#/signout">Click here to Sign out</a>', bodyOutputType: 'trustedHtml'});
         //DEBUG
         var token = jwtHelper.decodeToken(jwt);
         //console.log(token);
@@ -93,6 +93,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     var redirect = sessionStorage.getItem('auth_redirect');
     if(!redirect) redirect = document.referrer;
     if(!redirect) redirect = appconf.default_redirect_url;
+    sessionStorage.setItem('auth_redirect', redirect); //save it for iucas login which needs this later
 
     $scope.userpass = {};
     $scope.submit = function() {
@@ -101,7 +102,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         .success(function(data, status, headers, config) {
             scaMessage.success(data.message);
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            sessionStorage.removeItem('auth_redirect');
+            //sessionStorage.removeItem('auth_redirect');
             document.location = redirect;
         })
         .error(function(data, status, headers, config) {
@@ -234,7 +235,7 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, menu, jwt
             .success(function(data, status, headers, config) {
                 var redirect = sessionStorage.getItem('auth_settings_redirect');
                 if(redirect) {
-                    sessionStorage.removeItem('auth_settings_redirect');
+                    //sessionStorage.removeItem('auth_settings_redirect');
                     //TODO - set success messaga via cookie - if user is redirecting out of auth ui
                     //toaster.success(data.message);
                     document.location = redirect;

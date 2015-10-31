@@ -32,7 +32,7 @@
 
     app.run(['$http', 'appconf', '$cookies', 'scaMessage',
     function($http, appconf, $cookies, scaMessage) {
-        //console.log("(run) in iucascb");
+        console.log("run iucascb:"+document.referrer);
         var casticket = getParameterByName('casticket');
         $http.get(appconf.api+'/iucas/verify?casticket='+casticket)
         .then(function(res) {
@@ -42,7 +42,8 @@
                 window.location = './#/setpass';
             } else {
                 var redirect = sessionStorage.getItem('auth_redirect');
-                if(!redirect) redirect = './#/settings'; //we really don't want to get stuck on iucascb.html
+                //if(!redirect) redirect = './#/settings'; //we really don't want to get stuck on iucascb.html
+                //if(!redirect) redirect = appconf.default_redirect_url;
                 //document.location = redirect;
                 window.location = redirect; 
             }
