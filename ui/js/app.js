@@ -176,7 +176,7 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
             var jwt = localStorage.getItem(appconf.jwt_id);
             if(jwt == null || jwtHelper.isTokenExpired(jwt)) {
                 toaster.warning("Please singin first");
-                localStorage.setItem('post_auth_redirect', '#'+next.originalPath);
+                sessionStorage.setItem('auth_redirect', '#'+next.originalPath);
                 $location.path("/signin");
                 event.preventDefault();
             }

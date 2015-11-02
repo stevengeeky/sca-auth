@@ -91,6 +91,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
 
     //decide where to go after auth
     var redirect = sessionStorage.getItem('auth_redirect');
+    //TODO - try if user sent us redirect url via query param?
     if(!redirect) redirect = document.referrer;
     if(!redirect) redirect = appconf.default_redirect_url;
     sessionStorage.setItem('auth_redirect', redirect); //save it for iucas login which needs this later
@@ -102,7 +103,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         .success(function(data, status, headers, config) {
             scaMessage.success(data.message);
             localStorage.setItem(appconf.jwt_id, data.jwt);
-            //sessionStorage.removeItem('auth_redirect');
+            sessionStorage.removeItem('auth_redirect');
             document.location = redirect;
         })
         .error(function(data, status, headers, config) {
@@ -168,8 +169,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
         $http.post(appconf.api+'/signup', $scope.form)
         .success(function(data, status, headers, config) {
             localStorage.setItem(appconf.jwt_id, data.jwt);
-                //TODO - set success messaga via cookie - if user is redirecting out of auth ui
-                //toaster.success(data.message);
+                scaMessage.success("Successfully signed up!");
+                sessionStorage.removeItem('auth_redirect');
                 document.location = redirect;
         })
         .error(function(data, status, headers, config) {
@@ -202,8 +203,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
     $scope.submit = function() {
         $http.put(appconf.api+'/local/setpass', {password: $scope.form.password})
         .success(function(data, status, headers, config) {
-            //TODO - set success messaga via cookie - if user is redirecting out of auth ui
-            //toaster.success(data.message);
+            scaMessage.success("Successfully reset password!");
+            sessionStorage.removeItem('auth_redirect');
             document.location = redirect;
         })
         .error(function(data, status, headers, config) {
@@ -235,9 +236,8 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, menu, jwt
             .success(function(data, status, headers, config) {
                 var redirect = sessionStorage.getItem('auth_settings_redirect');
                 if(redirect) {
-                    //sessionStorage.removeItem('auth_settings_redirect');
-                    //TODO - set success messaga via cookie - if user is redirecting out of auth ui
-                    //toaster.success(data.message);
+                    scaMessage.success("Account settings updated successfully!");
+                    sessionStorage.removeItem('auth_settings_redirect');
                     document.location = redirect;
                 } else {
                     toaster.success(data.message);
