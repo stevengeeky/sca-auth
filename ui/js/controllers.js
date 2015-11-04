@@ -25,6 +25,13 @@ app.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http
     }
 }]);
 
+app.controller('HeaderController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'menu',
+function($scope, appconf, $route, toaster, $http, serverconf, menu) {
+    $scope.title = appconf.title;
+    serverconf.then(function(_c) { $scope.serverconf = _c; });
+    menu.then(function(_menu) { $scope.menu = _menu; });
+}]);
+
 //load menu and profile by promise chaining
 //http://www.codelord.net/2015/09/24/$q-dot-defer-youre-doing-it-wrong/
 //https://www.airpair.com/angularjs/posts/angularjs-promises
@@ -76,7 +83,7 @@ app.directive('compareTo', function() {
 
 app.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', '$sce',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage, $sce) {
-
+    $scope.$parent.active_menu = 'signin';
     $scope.title = appconf.title;
     $scope.logo_400_url = appconf.logo_400_url;
     scaMessage.show(toaster);
@@ -148,16 +155,13 @@ app.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams) {
     localStorage.removeItem(appconf.jwt_id);
     toaster.success("Good Bye!");
-    //$location.path("/signin");
     window.location = "#/signin";
 }]);
 
 app.controller('SignupController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage', 
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage) {
+    $scope.$parent.active_menu = 'signup';
     scaMessage.show(toaster);
-    //$scope.alerts = [];
-
-    //stores form
     $scope.form = {};
 
     //decide where to go after signup
@@ -181,6 +185,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
 
 app.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage) {
+    $scope.$parent.active_menu = 'setpass';
     scaMessage.show(toaster);
     //$scope.alerts = [];
 
@@ -216,6 +221,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
 
 app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'menu', 'jwtHelper', 'scaMessage',
 function($scope, appconf, $route, toaster, $http, profile, serverconf, menu, jwtHelper, scaMessage) {
+    $scope.$parent.active_menu = 'user';
     $scope.public_profile = profile.pub;
     $scope.user = null;
     $scope.form_password = {};
@@ -301,7 +307,7 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, menu, jwt
 
 app.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', 
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage) {
+    $scope.$parent.active_menu = 'user'; //TODO - is there a better menu?
     scaMessage.show(toaster);
-    //TODO
 }]);
 

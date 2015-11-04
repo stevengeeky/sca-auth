@@ -35,13 +35,13 @@ router.post('/', function(req, res, next) {
     db.User.findOne({where: {username: username} }).then(function(user) {
         if(user) {
             //TODO - maybe I should go ahead and forward user to login form?
-            return next(new Error('The username you chose is already registered. If it is yours, please try logging in, or register with a different username.'));
+            return next(new Error('The username you chose is already registered. If it is yours, please try signing in, or register with a different username.'));
         } else {
             //check for email already taken
             db.User.findOne({where: {email: email} }).then(function(user) {
                 if(user) {
                     //TODO - maybe I should go ahead and forward user to login form?
-                    return next(new Error('The email address you chose is already registered. If it is yours, please try logging in, or register with a different email address.'));
+                    return next(new Error('The email address you chose is already registered. If it is yours, please try signing in, or register with a different email address.'));
                 } else {
                     registerUser(username, email, password, function(user) {
                         var claim = jwt_helper.createClaim(user);
