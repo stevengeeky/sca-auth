@@ -3,13 +3,11 @@
 
 //contrib
 var argv = require('optimist').argv;
-//var winston = require('winston');
 var jwt = require('jsonwebtoken');
 
 //mine
-var config = require('../config');
-//var logger = new winston.Logger(config.logger.winston);
-var db = require('../models');
+var config = require('../api/config');
+var db = require('../api/models');
 
 if(!argv.scopes || !argv.sub) {
     logger.error("./signjwt.js --scopes '{common: [\"user\"]}' --sub 'my_service'");
@@ -25,7 +23,6 @@ var claim = {
 };
 
 var token = jwt.sign(claim, config.auth.private_key, config.auth.sign_opt);
-//console.log("Authentication: Bearer "+token);
 console.log(token);
 
 //verify to check

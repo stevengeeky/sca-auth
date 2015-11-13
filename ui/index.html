@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1, width=device-width">
-    <title>{{title}}</title>
+    <title ng-bind="title">Loading..</title>
 
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
     <!-- <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">-->
@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body ng-cloak>
-    <sca-menubar header="menu.header" menu="menu.top" active="active_menu" profile="menu._profile"></sca-menubar>
+    <sca-menubar header="menu.header" menu="menu.top" active="active_menu" profile="menu._profile" user="menu.user"></sca-menubar>
     <toaster-container toaster-options="{'position-class': 'toast-bottom-full-width'}"></toaster-container>
     <ng-view></ng-view><!-- <ng-view/> will cause route looping-->
 
@@ -41,7 +41,7 @@
     <script src="bower_components/zxcvbn/dist/zxcvbn.js"></script>
 
     <!-- TODO should be configurable? (and shared/css/style.css) -->
-    <script src="../shared/shared.js"></script>
+    <script src="../shared/dist/shared.js"></script>
 
     <script src="config.js"></script>
     <script src="js/app.js"></script>

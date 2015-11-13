@@ -1,7 +1,7 @@
 <div class="header">
     <h2>Settings</h2>
 </div>
-<sca-menutab menu="menu.settings" active="'account'"></sca-menutab>
+<sca-menutab menu="settings_menu" active="'account'" user="menu.user"></sca-menutab>
 <div class="container-fluid">
     <!--<h3 class="page-header">Public Profile</h3>-->
     <!--<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>-->
@@ -18,7 +18,7 @@
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <p class="text-muted">An email address used to login to your account - maybe different from the current email address in your public profile.</p>
+                <p class="text-muted">An email address used to signin to your account - maybe different from the current email address in your public profile.</p>
                 <input type="text" class="form-control" ng-model="user.email" disabled/>
             </div>
             <p class="text-muted">Last Login: 

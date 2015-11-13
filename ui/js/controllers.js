@@ -29,9 +29,11 @@ app.controller('HeaderController', ['$scope', 'appconf', '$route', 'toaster', '$
 function($scope, appconf, $route, toaster, $http, serverconf, menu) {
     $scope.title = appconf.title;
     serverconf.then(function(_c) { $scope.serverconf = _c; });
-    menu.then(function(_menu) { $scope.menu = _menu; });
+    //menu.then(function(_menu) { $scope.menu = _menu; });
+    $scope.menu = menu;
 }]);
 
+/*
 //load menu and profile by promise chaining
 //http://www.codelord.net/2015/09/24/$q-dot-defer-youre-doing-it-wrong/
 //https://www.airpair.com/angularjs/posts/angularjs-promises
@@ -61,7 +63,7 @@ app.factory('menu', ['appconf', '$http', 'jwtHelper', function(appconf, $http, j
         console.log("couldn't load profile");
     });
 }]);
-
+*/
 /*
 app.directive('compareTo', function() {
     return {
@@ -91,9 +93,6 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     var jwt = localStorage.getItem(appconf.jwt_id);
     if(jwt != null && !jwtHelper.isTokenExpired(jwt)) {
         toaster.pop({type: 'note', body: 'You are already signed in. <a href="#/signout">Click here to Sign out</a>', bodyOutputType: 'trustedHtml'});
-        //DEBUG
-        var token = jwtHelper.decodeToken(jwt);
-        //console.log(token);
     }
 
     //decide where to go after auth
@@ -187,8 +186,7 @@ app.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage) {
     $scope.$parent.active_menu = 'setpass';
     scaMessage.show(toaster);
-    //$scope.alerts = [];
-
+    
     //stores form
     $scope.form = {};
 
@@ -219,8 +217,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
     }
 }]);
 
-app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'menu', 'jwtHelper', 'scaMessage',
-function($scope, appconf, $route, toaster, $http, profile, serverconf, menu, jwtHelper, scaMessage) {
+app.controller('SettingsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'jwtHelper', 'scaMessage', 'scaSettingsMenu',
+function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper, scaMessage, scaSettingsMenu) {
     $scope.$parent.active_menu = 'user';
     $scope.public_profile = profile.pub;
     $scope.user = null;
@@ -230,11 +228,14 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, menu, jwt
 
     //for debug pane
     var jwt = localStorage.getItem(appconf.jwt_id);
-    var token = jwtHelper.decodeToken(jwt);
-    $scope.debug = {jwt: token};
+    var user = jwtHelper.decodeToken(jwt);
+    $scope.user = user;
+    $scope.settings_menu = scaSettingsMenu;
+
+    $scope.debug = {jwt: user};
 
     serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
-    menu.then(function(_menu) { $scope.menu = _menu; });
+    //menu.then(function(_menu) { $scope.menu = _menu; });
 
     $scope.submit_password = function() {
         if($scope.form_password.new == $scope.form_password.new_confirm) {
