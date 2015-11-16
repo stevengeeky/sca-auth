@@ -36,7 +36,7 @@
         var casticket = getParameterByName('casticket');
         $http.get(appconf.api+'/iucas/verify?casticket='+casticket)
         .then(function(res) {
-            scaMessage.success('Successfully signed in with IU CAS!');
+            scaMessage.success('Signed in successfully');
             localStorage.setItem(appconf.jwt_id, res.data.jwt);
             if(res.data.need_setpass) {
                 window.location = './#/setpass';
