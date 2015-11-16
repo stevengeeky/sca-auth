@@ -39,22 +39,10 @@ function associate(jwt, uid, res) {
 function register_newuser(uid, res, next) {
     logger.info("registering new user with iucas id:"+uid);
     db.User.findOne({where: {'username': uid}}).then(function(user) {
-        //if(err) return next(err);
         if(user) {
             logger.warn("username already registered:"+uid+"(can't auto register)");
-            //why am I passing this message via errors.html?
-            //because in order to login via IU CAS, I had to make browser jump to IU CAS page and back 
             //TODO - instead of showing this error message, maybe I should redirect user to
-            //a page to force user to login via user/pass, then associate the IU CAS IU 
-            //once user logs in 
-            /*
-            var messages = [{type: "error", title: "Registration Failed", message: "This is the first time you login with IU CAS account, "+
-                "but we couldn't register this account since the username '"+uid+"' is already registered in our system. "+
-                "If you have already registered with username / password, please login with username / password first, "+
-                "then associate your IU CAS account under your account settings."}];
-            res.cookie('messages', JSON.stringify(messages), {path: '/'});
-            return res.redirect(config.iucas.home_url);
-            */
+            //a page to force user to login via user/pass, then associate the IU CAS IU once user logs in 
             next({message: 
                 "This is the first time you login with IU CAS account, "+
                 "but we couldn't register this account since the username '"+uid+"' is already registered in our system. "+

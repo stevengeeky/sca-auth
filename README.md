@@ -25,4 +25,6 @@ Fix: trying to access https://soichi7.ppa.iu.edu/auth/#/settings without first l
 
 If a user has multiple account, trying to associate with same IUCAS account ends up with basically logging in as the user account that's already associated with the IU CAS account.
 
-iucascb.html should never be set to document.referrer because I don't want auth service to redirect back to it after authentication.. but that's currently happning.
+Don't forward jwt to pages under domain that's not configured to do so (by default, it should limit to the same-origin domain name)
+
+iucas/register_newuser. If the uid is already registered, instead of veto-ing, forward user to a special login page and once logged in successfully, associate the IUCAS IU to the user account

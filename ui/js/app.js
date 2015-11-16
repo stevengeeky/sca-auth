@@ -226,13 +226,13 @@ function(appconf, $http, jwtHelper, $sce, scaMessage, scaMenu) {
     var menu = {
         header: {
             //label: appconf.title,
-            //icon: $sce.trustAsHtml("<img src=\""+appconf.icon_url+"\">"),
-            //url: "#/",
         },
         top: scaMenu,
         user: null, //to-be-loaded
         _profile: null, //to-be-loaded
     };
+    if(appconf.icon_url) menu.header.icon = $sce.trustAsHtml("<img src=\""+appconf.icon_url+"\">");
+    if(appconf.home_url) menu.header.url = appconf.home_url
 
     var jwt = localStorage.getItem(appconf.jwt_id);
     if(jwt) menu.user = jwtHelper.decodeToken(jwt);

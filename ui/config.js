@@ -6,7 +6,14 @@
 angular.module('app.config', [])
 //constant *service*
 .constant('appconf', {
+
     title: 'Authentication Service',
+
+    /*
+    icon_url: '../meshconfig/images/logo.png',
+    home_url: '../meshconfig',
+    */
+
     admin_email: 'hayashis@iu.edu',
     logo_400_url: 'images/soichidev.jpg',
     //logo_400_url: 'images/meshconfig_logo.jpg',
