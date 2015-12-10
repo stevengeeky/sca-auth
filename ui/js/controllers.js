@@ -193,7 +193,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
 app.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'menu',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, menu) {
     localStorage.removeItem(appconf.jwt_id);
-    toaster.success("Good Bye! (TODO - I need to invalidate the scaMenu somehow)");
+    toaster.success("Good Bye!");
+    menu.user = null; //scaMenubar watches for this and re-init
     window.location = "#/signin";
     /*
     window.location = "#";

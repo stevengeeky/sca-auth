@@ -243,9 +243,11 @@ function(appconf, $http, jwtHelper, $sce, scaMessage, scaMenu, toaster) {
     return menu;
 }]);
 
+/*
 app.filter('pullcn', function() {
     return function(input) {
         var pos = input.indexOf("/CN=");
         return input.substr(pos);
     };
 });
+*/
