@@ -7,7 +7,17 @@ body {
 <div class="container">
     <div class="center-block">
         <img class="logo" ng-src="{{logo_400_url}}"/>
-        <div class="form-group">
+        <div class="form-group" ng-if="serverconf.x509">
+            <button type="button" class="btn btn-warning btn-block" ng-click="begin_x509()">
+                <i class="fa fa-certificate" style="font-size: 150%"></i> Signin with X509 Certificate
+            </button>
+        </div>
+        <div class="form-group" ng-if="serverconf.git">
+            <button type="button" class="btn btn-primary btn-block" ng-click="begin_git()">
+                <i class="fa fa-github" style="font-size: 150%"></i> Signin with Github
+            </button>
+        </div>
+        <div class="form-group" ng-if="serverconf.iucas">
             <button type="button" class="btn btn-danger btn-block" ng-click="begin_iucas()">
                 <img src="images/trident.png"/>&nbsp;&nbsp;&nbsp;Signin with IU Account
             </button>
@@ -15,7 +25,7 @@ body {
         <div class="form-group">
             <center>or</center>
         </div>
-        <form ng-submit="submit()">
+        <form ng-submit="submit()" ng-if="serverconf.local">
             <!-- name="username" and name="password" isn't technically needed but it helps browser figures out what fields they are (autopopulate) -->
             <div class="form-group">
                 <div class="input-group">

@@ -26,12 +26,13 @@ function finduserByiucasid(id, done) {
 function associate(jwt, uid, res) {
     logger.info("associating user with iucas id:"+uid);
     db.User.findOne({where: {id: jwt.sub}}).then(function(user) {
-        if(!user) throw new Error("couldn't find user record with jwt.sub:"+uid);
+        if(!user) throw new Error("couldn't find user record with uid:"+uid);
         user.iucas = uid;
         user.save().then(function() {
             var messages = [{type: "success", /*title: "IUCAS ID Associated",*/ message: "We have associated IU ID:"+uid+" to your account"}];
             res.cookie('messages', JSON.stringify(messages), {path: '/'});
-            return res.json({status: "ok"}); //probably ignored.. but
+            //return res.json({status: "ok"}); //probably ignored.. but
+            return_jwt(user, res);
         });
     });
 }
@@ -129,7 +130,7 @@ router.put('/disconnect', jwt({secret: config.auth.public_key}), function(req, r
         if(!user) res.status(401).end();
         user.iucas = null;
         user.save().then(function() {
-            res.json({message: "Successfully disconnected IUCAS account."});
+            res.json({message: "Successfully disconnected IUCAS account.", user: user});
         });    
     });
 });

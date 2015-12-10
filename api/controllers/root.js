@@ -40,6 +40,9 @@ router.get('/config', function(req, res) {
     if(config.git) {
         c.git = {};
     }
+    if(config.x509) {
+        c.x509= {};
+    }
     if(config.google) {
         c.google= {};
     }
@@ -50,7 +53,7 @@ router.get('/config', function(req, res) {
 router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
     db.User.findOne({
         where: {id: req.user.sub},
-        attributes: ['username', 'email', 'iucas', 'googleid', 'gitid', 'times'],
+        attributes: ['username', 'email', 'iucas', 'googleid', 'gitid', 'x509dns', 'times'],
     }).then(function(user) {
         if(user) res.json(user);
         else res.status(404).end();

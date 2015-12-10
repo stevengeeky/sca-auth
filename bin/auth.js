@@ -114,7 +114,7 @@ function modscope() {
             del(user.scopes, JSON.parse(argv.del));
         }
         user.save().then(function() {
-            logger.info("after");
+            logger.info("after (user needs to re-signin for this to take an effect)");
             logger.debug(JSON.stringify(user, null, 4));
         }).catch(function(err) {
             logger.error(err);

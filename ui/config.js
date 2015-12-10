@@ -20,6 +20,9 @@ angular.module('app.config', [])
 
     //URL for auth service API
     api: '../api/auth',
+    
+    //URL for x509 validation API
+    x509api: 'https://soichi7.ppa.iu.edu:9443',
 
     //shared servive api and ui urls (for menus and stuff)
     shared_api: '../api/shared',

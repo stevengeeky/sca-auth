@@ -83,17 +83,24 @@ app.directive('compareTo', function() {
 });
 */
 
-app.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', '$sce',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage, $sce) {
+app.controller('SigninController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', '$sce', 'serverconf',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage, $sce, serverconf) {
     $scope.$parent.active_menu = 'signin';
     $scope.title = appconf.title;
+    serverconf.then(function(_c) { $scope.serverconf = _c; });
     $scope.logo_400_url = appconf.logo_400_url;
     scaMessage.show(toaster);
 
+    /*
     var jwt = localStorage.getItem(appconf.jwt_id);
     if(jwt != null && !jwtHelper.isTokenExpired(jwt)) {
-        toaster.pop({type: 'note', body: 'You are already signed in. <a href="#/signout">Click here to Sign out</a>', bodyOutputType: 'trustedHtml'});
+        toaster.pop({
+            type: 'note', 
+            body: 'You are already signed in. <a href="#/signout">Click here to Sign out</a>', 
+            bodyOutputType: 'trustedHtml'
+        });
     }
+    */
 
     //decide where to go after auth
     var redirect = sessionStorage.getItem('auth_redirect');
@@ -125,6 +132,38 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         window.location.href = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
     }
 
+    $scope.begin_x509 = function() {
+        /*
+        var iframe = document.createElement('iframe');
+        iframe.src = appconf.x509api+'/x509/auth';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe); //without this, iframe page won't be parsed
+        */
+
+        //var jwt = localStorage.getItem(appconf.jwt_id);
+        //$http.get(appconf.x509api+'/x509/auth', {headers: { 'Authorization': 'Bearer '+jwt, }})
+        $http.get(appconf.x509api+'/x509/auth') //, {headers: null})
+        .then(function(res) {
+            toaster.success("You are logged in!");
+            localStorage.setItem(appconf.jwt_id, res.data.jwt);
+            //TODO - unlike iucas login, I can't think of a scenario where user's pass needs to be set (since I don't do auto-registration yet)
+            //but.. I am going to leave it there for the consistency sake
+            if(res.data.need_setpass) {
+                window.location = './#/setpass';
+            } else {
+                var redirect = sessionStorage.getItem('auth_redirect');
+                //if(!redirect) redirect = './#/settings'; //we really don't want to get stuck on iucascb.html
+                //if(!redirect) redirect = appconf.default_redirect_url;
+                //document.location = redirect;
+                window.location = redirect; 
+            }
+        }, function(res) {
+            console.dir(res);
+            toaster.error(res.data.message);
+        }); 
+    }
+
+    /* I think this is no longer used (TODO confirm)
     $scope.test = function() {
         $http.get(appconf.api+'/verify')
         .success(function(data, status, headers, config) {
@@ -136,6 +175,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
             toaster.error(data.message);
         }); 
     }
+    */
 
     function getQueryVariable(variable) {
         var query = window.location.search.substring(1);
@@ -150,11 +190,15 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     }
 }]);
 
-app.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams) {
+app.controller('SignoutController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'menu',
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, menu) {
     localStorage.removeItem(appconf.jwt_id);
-    toaster.success("Good Bye!");
+    toaster.success("Good Bye! (TODO - I need to invalidate the scaMenu somehow)");
     window.location = "#/signin";
+    /*
+    window.location = "#";
+    location.reload();
+    */
 }]);
 
 app.controller('SignupController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage', 
@@ -257,23 +301,29 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
             console.log("password confirmation fail");
         }
     }
-    $scope.disconnect = function(type) {
-        $http.put(appconf.api+'/'+type+'/disconnect')
+
+    $scope.disconnect = function(type, data) {
+        $http.put(appconf.api+'/'+type+'/disconnect', data)
         .success(function(data) {
             toaster.success(data.message);
+            $scope.user = data.user;
+            /*
+            //for updating UI..
             switch(type) {
             case "iucas": delete $scope.user.iucas; break;
             case "git": delete $scope.user.gitid; break;
             case "google": delete $scope.user.googleid; break;
+            case "x509": delete $scope.user.x509dn; break;
             }
+            */
         })
         .error(function(data) {
             toaster.error(data.message);
         });
     }
+
     $scope.iucas_connect = function() {
-        //localStorage.setItem('post_auth_redirect', window.location.href);
-        //scaRedirector.push(window.location.href);
+        sessionStorage.setItem('auth_redirect', window.location.href); 
         var casurl = window.location.origin+window.location.pathname+'iucascb.html';
         window.location = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
     }
@@ -282,6 +332,17 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
     }
     $scope.google_connect = function() {
         toaster.info("google_connect todo");
+    }
+    $scope.x509_connect = function() {
+        $http.get(appconf.x509api+'/x509/connect') //, {headers: null})
+        .success(function(data, status, headers, config) {
+            toaster.success(data.message);
+            $scope.user = data.user;
+        })
+        .error(function(data, status, headers, config) {
+            toaster.error(data.message);
+        }); 
+        
     }
 
     $scope.$watch('form_password.new', function(newv, oldv) {

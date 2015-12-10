@@ -19,5 +19,11 @@ if(config.local) {
 if(config.iucas) {
     router.use('/iucas', require('./controllers/iucas'));
 }
+if(config.x509) {
+    router.use('/x509', require('./controllers/x509'));
+}
+if(config.git) {
+    router.use('/git', require('./controllers/git'));
+}
 
 module.exports = router;

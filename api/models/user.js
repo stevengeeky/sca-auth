@@ -32,6 +32,18 @@ module.exports = function(sequelize, DataTypes) {
         iucas: Sequelize.STRING,
         googleid: Sequelize.STRING,
         gitid: Sequelize.STRING,
+        x509dns: { //array of DNs
+            type: Sequelize.TEXT,
+            defaultValue: '[]',
+            get: function () { 
+                var v = this.getDataValue('x509dns');
+                if(!v) return null;
+                return JSON.parse(v);
+            },
+            set: function (admins) {
+                return this.setDataValue('x509dns', JSON.stringify(admins));
+            }
+        },
 
         //login_date: Sequelize.DATE,         //last login date
 
