@@ -15,6 +15,7 @@
 var argv = require('optimist').argv;
 var winston = require('winston');
 var jwt = require('jsonwebtoken');
+var fs = require('fs');
 //var _ = require('underscore');
 
 //mine
@@ -39,7 +40,7 @@ function listuser() {
 
 function issue() {
     if(!argv.scopes || !argv.sub) {
-        logger.error("./auth.js issue --scopes '{common: [\"user\"]}' --sub 'my_service'");
+        logger.error("./auth.js issue --scopes '{common: [\"user\"]}' --sub 'my_service' --out token.jwt");
         process.exit(1);
     }
 
@@ -52,7 +53,11 @@ function issue() {
     };
 
     var token = jwt.sign(claim, config.auth.private_key, config.auth.sign_opt);
-    console.log(token);
+    if(argv.out) {
+        fs.writeFileSync(argv.out, token);
+    } else {
+        console.log(token);
+    }
 
     //verify to check
     jwt.verify(token, config.auth.public_key, function(err, decoded) {
