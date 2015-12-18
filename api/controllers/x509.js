@@ -121,6 +121,7 @@ router.get('/auth', /*jwt({secret: config.auth.public_key, credentialsRequired: 
     });
 });
 
+//!! this endpoint needs to be exposed via webserver that's requiring x509 DN
 router.get('/connect', jwt({secret: config.auth.public_key}), function(req, res, next) {
     var dn = req.headers[config.x509.dn_header];
     finduserByDN(dn, function(err, user, msg) {

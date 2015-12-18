@@ -268,7 +268,6 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
     $scope.public_profile = profile.pub;
     $scope.user = null;
     $scope.form_password = {};
-    $scope.password_strength = {};
     scaMessage.show(toaster);
 
     //for debug pane
@@ -346,20 +345,6 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
         
     }
 
-    $scope.$watch('form_password.new', function(newv, oldv) {
-        if(newv) {
-            //gather strings that we don't want user to use as password (like user's own fullname, etc..)
-            var used = [];
-            if($scope.public_profile) used.push($scope.public_profile.fullname);
-            if($scope.user) { 
-                used.push($scope.user.username);
-                used.push($scope.user.email);
-            }
-            //https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
-            var st = zxcvbn(newv, used);
-            $scope.password_strength = st;
-        }
-    });
     
     //load user info
     $http.get(appconf.api+'/me')
@@ -373,4 +358,34 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     $scope.$parent.active_menu = 'user'; //TODO - is there a better menu?
     scaMessage.show(toaster);
 }]);
+
+app.directive('passwordStrength', function() {
+    return {
+        scope: {
+            password: "=password",
+          
+            //optional attributes to make password more secure
+            profile: "=profile",
+            user: "=user",
+        },
+        templateUrl: 't/passwordstrength.html',
+        link: function(scope, element, attributes) {
+            scope.password_strength = {};
+            scope.$watch('password', function(newv, oldv) {
+                if(newv) {
+                    //gather strings that we don't want user to use as password (like user's own fullname, etc..)
+                    var used = [];
+                    if(scope.profile) used.push(scope.profile.fullname);
+                    if(scope.user) { 
+                        used.push(scope.user.username);
+                        used.push(scope.user.email);
+                    }
+                    //https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/
+                    var st = zxcvbn(newv, used);
+                    scope.password_strength = st;
+                }
+            });
+        }
+    };
+});
 
