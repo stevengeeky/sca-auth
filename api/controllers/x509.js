@@ -90,6 +90,10 @@ router.get('/auth', /*jwt({secret: config.auth.public_key, credentialsRequired: 
     //res.header("Access-Control-Allow-Headers", "X-Requested-With");
     //return res.json({status: "ok", dn: req.headers[config.x509.dn_header], /*headers: req.headers*/});
     var dn = req.headers[config.x509.dn_header];
+    if(!dn) {
+        console.dir(req.headers);
+        return next(new Error("Couldn't find x509 DN (maybe configuration issue?)"));
+    }
     finduserByDN(dn, function(err, user, msg) {
         if(err) {
             res.status("500"); //TODO - why don't I send error message back? for security?
@@ -124,6 +128,10 @@ router.get('/auth', /*jwt({secret: config.auth.public_key, credentialsRequired: 
 //!! this endpoint needs to be exposed via webserver that's requiring x509 DN
 router.get('/connect', jwt({secret: config.auth.public_key}), function(req, res, next) {
     var dn = req.headers[config.x509.dn_header];
+    if(!dn) {
+        console.dir(req.headers);
+        return next(new Error("Couldn't find x509 DN (maybe configuration issue?)"));
+    }
     finduserByDN(dn, function(err, user, msg) {
         if(err) return res.status("500").end();
         if(!user) {
