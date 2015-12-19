@@ -144,7 +144,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         //$http.get(appconf.x509api+'/x509/auth', {headers: { 'Authorization': 'Bearer '+jwt, }})
         $http.get(appconf.x509api+'/x509/auth') //, {headers: null})
         .then(function(res) {
-            toaster.success("You are logged in!");
+            scaMessage.success("Welcome back!");
             localStorage.setItem(appconf.jwt_id, res.data.jwt);
             //TODO - unlike iucas login, I can't think of a scenario where user's pass needs to be set (since I don't do auto-registration yet)
             //but.. I am going to leave it there for the consistency sake

@@ -101,6 +101,7 @@
                             <p>
                                 {{dn}} 
                                 <span class="text-muted"> | Last Login: 
+                                    <span ng-if="!user.times['x509_login:'+dn]">Never</span>
                                     <time>{{user.times['x509_login:'+dn] | date:'medium'}}</time>
                                 </span>
                             </p>
