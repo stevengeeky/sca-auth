@@ -113,14 +113,13 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
     $scope.submit = function() {
         //console.dir($scope.userpass);
         $http.post(appconf.api+'/local/auth', $scope.userpass)
-        .success(function(data, status, headers, config) {
-            scaMessage.success(data.message);
-            localStorage.setItem(appconf.jwt_id, data.jwt);
+        .then(function(res) {
+            scaMessage.success(res.data.message);
+            localStorage.setItem(appconf.jwt_id, res.data.jwt);
             sessionStorage.removeItem('auth_redirect');
             document.location = redirect;
-        })
-        .error(function(data, status, headers, config) {
-            toaster.error(data.message);
+        }, function(res) {
+            toaster.error(res.data.message);
         }); 
     }
 
@@ -146,17 +145,16 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         .then(function(res) {
             scaMessage.success("Welcome back!");
             localStorage.setItem(appconf.jwt_id, res.data.jwt);
-            //TODO - unlike iucas login, I can't think of a scenario where user's pass needs to be set (since I don't do auto-registration yet)
-            //but.. I am going to leave it there for the consistency sake
-            if(res.data.need_setpass) {
-                window.location = './#/setpass';
+            var redirect = sessionStorage.getItem('auth_redirect');
+            window.location = redirect; 
+            /*
+            if(res.data.need_profile) {
+                window.location = './#/complete';
             } else {
                 var redirect = sessionStorage.getItem('auth_redirect');
-                //if(!redirect) redirect = './#/settings'; //we really don't want to get stuck on iucascb.html
-                //if(!redirect) redirect = appconf.default_redirect_url;
-                //document.location = redirect;
                 window.location = redirect; 
             }
+            */
         }, function(res) {
             console.dir(res);
             toaster.error(res.data.message);
@@ -215,32 +213,43 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
 
     $scope.submit = function() {
         $http.post(appconf.api+'/signup', $scope.form)
-        .success(function(data, status, headers, config) {
-            localStorage.setItem(appconf.jwt_id, data.jwt);
+        .then(function(res, status, headers, config) {
+            localStorage.setItem(appconf.jwt_id, res.data.jwt);
+
+            //let's post public profile for the first time
+            $http.put(appconf.profile_api+'/public/'+res.data.sub, {
+                email: $scope.form.email,
+                fullname: $scope.form.fullname,
+            })
+            .then(function(res) {
                 scaMessage.success("Successfully signed up!");
                 sessionStorage.removeItem('auth_redirect');
                 document.location = redirect;
-        })
-        .error(function(data, status, headers, config) {
-            toaster.error(data.message);
+            }, function(res) {
+                toaster.error(res.data.message);
+            });
+        }, function(res) {
+            toaster.error(res.data.message);
         });         
     }
 }]);
 
-app.controller('SetpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage',
+app.controller('CompleteController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage',
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage) {
-    $scope.$parent.active_menu = 'setpass';
+    $scope.$parent.active_menu = 'complete';
     scaMessage.show(toaster);
+    var jwt = localStorage.getItem(appconf.jwt_id);
+    var user = jwtHelper.decodeToken(jwt);
     
     //stores form
     $scope.form = {};
 
     $http.get(appconf.api+'/me')
-    .success(function(data, status, headers, config) {
-        $scope.form.username = data.username;
-    })
-    .error(function(data, status, headers, config) {
-        toaster.error(data.message);
+    .then(function(res, status, headers, config) {
+        $scope.form.username = res.data.username;
+        $scope.form.email = res.data.email;
+    }, function(res) {
+        toaster.error(res.data.message);
     }); 
 
     //decide where to go after setting password
@@ -248,17 +257,42 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
     if(!redirect) redirect = document.referrer;
     if(!redirect) redirect = appconf.default_redirect_url;
 
-    $scope.submit = function() {
+    function put_profile(cb) {
+        $http.put(appconf.profile_api+'/public/'+user.sub, {
+            email: $scope.form.email,
+            fullname: $scope.form.fullname,
+        }).then(function(res) {
+            cb(res);
+        }, function(res) {
+            toaster.error(res.data.message);
+        });
+    }
+    function set_pass(cb) {
+        console.dir($scope.form);
         $http.put(appconf.api+'/local/setpass', {password: $scope.form.password})
-        .success(function(data, status, headers, config) {
-            scaMessage.success("Successfully reset password!");
-            sessionStorage.removeItem('auth_redirect');
-            document.location = redirect;
-        })
-        .error(function(data, status, headers, config) {
-            console.dir(data);
-            toaster.error(data.message);
+        .then(function(res) {
+            cb(res);
+        }, function(res) {
+            toaster.error(res.data.message);
         });         
+    }
+    function alldone() {
+        scaMessage.success("Registration Complete!");
+        sessionStorage.removeItem('auth_redirect');
+        document.location = redirect;
+    }
+    $scope.submit = function() {
+        if($scope.form.password) {
+            set_pass(function(res) {
+                put_profile(function(res) {
+                    alldone();
+                });
+            });
+        } else {
+            put_profile(function(res) {
+                alldone();
+            });
+        }
     }
 }]);
 
@@ -275,38 +309,43 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
     var user = jwtHelper.decodeToken(jwt);
     $scope.user = user;
     $scope.settings_menu = scaSettingsMenu;
-
     $scope.debug = {jwt: user};
 
     serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
-    //menu.then(function(_menu) { $scope.menu = _menu; });
+    $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
 
     $scope.submit_password = function() {
-        if($scope.form_password.new == $scope.form_password.new_confirm) {
-            $http.put(appconf.api+'/local/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
-            .success(function(data, status, headers, config) {
-                var redirect = sessionStorage.getItem('auth_settings_redirect');
-                if(redirect) {
-                    scaMessage.success("Account settings updated successfully!");
-                    sessionStorage.removeItem('auth_settings_redirect');
-                    document.location = redirect;
-                } else {
-                    toaster.success(data.message);
-                }
-            })
-            .error(function(data, status, headers, config) {
-                toaster.error(data.message);
-            });
+        //if($scope.form_password.new == $scope.form_password.new_confirm) {
+        $http.put(appconf.api+'/local/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
+        .then(function(res, status, headers, config) {
+            /*
+            var redirect = sessionStorage.getItem('auth_settings_redirect');
+            if(redirect) {
+                scaMessage.success("Account settings updated successfully!");
+                sessionStorage.removeItem('auth_settings_redirect');
+                document.location = redirect;
+            } else {
+                toaster.success(res.data.message);
+                $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
+            }
+            */
+            toaster.success(res.data.message);
+            $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
+        }, function(res, status, headers, config) {
+            toaster.error(res.data.message);
+        });
+        /*
         } else {
             console.log("password confirmation fail");
         }
+        */
     }
 
     $scope.disconnect = function(type, data) {
         $http.put(appconf.api+'/'+type+'/disconnect', data)
-        .success(function(data) {
-            toaster.success(data.message);
-            $scope.user = data.user;
+        .then(function(res) {
+            toaster.success(res.data.message);
+            $scope.user = res.data.user;
             /*
             //for updating UI..
             switch(type) {
@@ -316,9 +355,8 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
             case "x509": delete $scope.user.x509dn; break;
             }
             */
-        })
-        .error(function(data) {
-            toaster.error(data.message);
+        }, function(res) {
+            toaster.error(res.data.message);
         });
     }
 
@@ -335,22 +373,14 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
     }
     $scope.x509_connect = function() {
         $http.get(appconf.x509api+'/x509/connect') //, {headers: null})
-        .success(function(data, status, headers, config) {
-            toaster.success(data.message);
-            $scope.user = data.user;
-        })
-        .error(function(data, status, headers, config) {
-            toaster.error(data.message);
+        .then(function(res, status, headers, config) {
+            toaster.success(res.data.message);
+            $scope.user = res.data.user;
+        }, function(res, status, headers, config) {
+            toaster.error(res.data.message);
         }); 
-        
     }
 
-    
-    //load user info
-    $http.get(appconf.api+'/me')
-    .success(function(info) {
-        $scope.user = info;
-    });
 }]);
 
 app.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', 

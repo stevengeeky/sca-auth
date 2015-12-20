@@ -10,16 +10,16 @@ var config = require('../config');
 var logger = new winston.Logger(config.logger.winston);
 var db = require('../models');
 
-function registerUser(username, email, password, done) {
+function registerUser(body, done) {
     var user = db.User.build({
-        username: username, 
-        email: email,
+        username: body.username, 
+        email: body.email,
         scopes: config.auth.default_scopes
     });
     logger.info("registering user");
-    user.setPassword(password, function(err) {
-        logger.debug("set password done");
+    user.setPassword(body.password, function(err) {
         if(err) return done(err);
+        logger.debug("set password done");
         user.save().then(done);
     });
 }
@@ -27,9 +27,8 @@ function registerUser(username, email, password, done) {
 router.post('/', function(req, res, next) {
     var username = req.body.username;
     var email = req.body.email;
-    var password = req.body.password;
 
-    //TODO - validate password strength?
+    //TODO - validate password strength? (req.body.password)
     
     //check for username already taken
     db.User.findOne({where: {username: username} }).then(function(user) {
@@ -43,10 +42,10 @@ router.post('/', function(req, res, next) {
                     //TODO - maybe I should go ahead and forward user to login form?
                     return next(new Error('The email address you chose is already registered. If it is yours, please try signing in, or register with a different email address.'));
                 } else {
-                    registerUser(username, email, password, function(user) {
+                    registerUser(req.body, function(user) {
                         var claim = jwt_helper.createClaim(user);
                         var jwt = jwt_helper.signJwt(claim);
-                        res.json({message: "Successfully Registered!", jwt: jwt});
+                        res.json({message: "Successfully Registered!", jwt: jwt, sub: user.id});
                     });        
                 }
             });

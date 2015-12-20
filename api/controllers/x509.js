@@ -57,20 +57,23 @@ function register_newuser(dn, uid, res, next) {
                 iucas: uid,
                 scopes: config.auth.default_scopes
             }).then(function(user) {
-                return_jwt(user, dn, res);
+                issue_jwt(user, dn, res);
             });
         }
     });
 }
 */
 
-function return_jwt(user, dn, res) {
+function issue_jwt(user, dn, cb) {
     user.updateTime('x509_login:'+dn);
     user.save().then(function() {
         var claim = jwt_helper.createClaim(user);
         var jwt = jwt_helper.signJwt(claim);
+        cb(jwt);
+        /*
         var need_setpass = (!user.password_hash);
         return res.json({jwt:jwt, need_setpass: need_setpass});
+        */
     });
 }
 
@@ -100,27 +103,14 @@ router.get('/auth', /*jwt({secret: config.auth.public_key, credentialsRequired: 
             return res.end();
         }
         if(!user) {
-            /*
-            if(req.user) {
-                //If user is already logged in, but DN is associated yet.. then auto-associate.
-                //If someone with only local account let someone else login via iucas on the same browser, while the first person is logged in,
-                //that someone else can then start using the first person's account after he leaves the computer. However, user intentionally
-                //visiting /auth page when the first user is already logged into a system is very unlikely, since the user most likely will
-                //sign out so that second user can login. also, if this situation to ever occur, user should be presented with 
-                //"we have associated your account" message so that first user should be aware of this happening
-                associate(req.user, dn, res);
-            } else {
-                //TODO - we could auto register if we know user's uid. if the uid already exists, then we need to ask user to associate under account option
-                //if the uid doesn't exist, then do register_newuser similar to iucas
-                res.status(400).json({message: "Your DN("+dn+") is not yet registered. Please Signup/Signin with your username/password first, then associate your x509 certificate under your account settings."});
-                //register_newuser(dn, uid, res, next);
-            }
-            */
+            //TODO - create new user, and forwward user to a page to set username / email. etc..
             res.status(400).json({message: "Your DN("+dn+") is not yet registered. Please Signup/Signin with your username/password first, then associate your x509 certificate under your account settings."});
         } else {
             //all good. issue token
             logger.debug("x509 authentication successful with "+dn);
-            return_jwt(user, dn, res);
+            issue_jwt(user, dn, function(jwt) {
+                res.json({jwt:jwt});
+            });
         }
     });
 });

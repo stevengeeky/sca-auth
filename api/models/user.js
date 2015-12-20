@@ -12,14 +12,10 @@ var logger = new winston.Logger(config.logger.winston);
 
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('User', {
+        
         //for user/pass login
         username: Sequelize.STRING,
-
-        //TODO - I should probably deprecate this.. since email is stored under profile
-        //this allows user to login through email, but we can't just use profile.email, since
-        //user can change that at any moment.. maybe we can allow user to change this 
-        //per request (and go through a verification process)
-        email: Sequelize.STRING,
+        email: Sequelize.STRING, //TODO implement email velification?
 
         password_hash: Sequelize.STRING,
 

@@ -32,7 +32,9 @@ function associate(jwt, uid, res) {
             var messages = [{type: "success", /*title: "IUCAS ID Associated",*/ message: "We have associated IU ID:"+uid+" to your account"}];
             res.cookie('messages', JSON.stringify(messages), {path: '/'});
             //return res.json({status: "ok"}); //probably ignored.. but
-            return_jwt(user, res);
+            issue_jwt(user, function(jwt) {
+                res.json({jwt:jwt});
+            });
         });
     });
 }
@@ -54,23 +56,28 @@ function register_newuser(uid, res, next) {
             db.User.create({
                 username: uid, //let's use IU id as local username
                 email: uid+"@iu.edu", 
-                email_confirmed: true, //let's trust IU id
+                email_confirmed: true, //let's trust IU..
                 iucas: uid,
                 scopes: config.auth.default_scopes
             }).then(function(user) {
-                return_jwt(user, res);
+                issue_jwt(user, function(jwt) {
+                    res.json({jwt:jwt, registered: true});
+                });
             });
         }
     });
 }
 
-function return_jwt(user, res) {
+function issue_jwt(user, cb) {
     user.updateTime('iucas_login');
     user.save().then(function() {
         var claim = jwt_helper.createClaim(user);
         var jwt = jwt_helper.signJwt(claim);
-        var need_setpass = (!user.password_hash);
-        return res.json({jwt:jwt, need_setpass: need_setpass});
+        cb(jwt);
+        /*
+        var need_profile = (!user.password_hash);
+        return res.json({jwt:jwt, need_profile: need_profile});
+        */
     });
 }
 
@@ -109,7 +116,9 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
                     } else {
                         //all good. issue token
                         logger.debug("iucas authentication successful. iu id:"+uid);
-                        return_jwt(user, res);
+                        issue_jwt(user, function(jwt) {
+                            res.json({jwt:jwt});
+                        });
                     }
                 });
             } else {

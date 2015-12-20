@@ -11,42 +11,55 @@
             <h4 class="list-group-item-heading">Login Tokens</h4>
         </li>
         -->
-        <li class="list-group-item" ng-if="serverconf.local">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" class="form-control" ng-model="user.username" disabled/>
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <p class="text-muted">An email address used to signin to your account - maybe different from the current email address in your public profile.</p>
-                <input type="text" class="form-control" ng-model="user.email" disabled/>
-            </div>
-            <p class="text-muted">Last Login: 
-                <span ng-if="!user.times.local_login">Never</span>
-                <time ng-if="user.times.local_login">{{user.times.local_login | date:'medium'}}</time>
-            </p>
+        <li class="list-group-item">
+            <form ng-submit="submit_profile();">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" class="form-control" ng-model="user.username" disabled/>
+                </div>
+                <div class="form-group">
+                    <label>Login Email</label>
+                    <p class="text-muted">An email address used to signin to your account - maybe different from the current email address in your public profile.</p>
+
+                    <input type="text" class="form-control" ng-model="user.email" disabled/>
+                </div>
+                <!--
+                <p class="text-muted pull-right">
+                    Last Login via user/pass: 
+                    <span ng-if="!user.times.local_login">Never</span>
+                    <time ng-if="user.times.local_login">{{user.times.local_login | date:'medium'}}</time>
+                </p>
+                -->
+                <!--
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" ng-model="user.fullname"/>
+                </div>
+                <input type="submit" class="btn" value="Update"/>
+                -->
+            </form>
         </li>
         <li class="list-group-item heading" ng-if="serverconf.local">
             <h4 class="list-group-item-heading">Change Password</h4>
         </li>
         <li class="list-group-item" ng-if="serverconf.local">
             <form ng-submit="submit_password();">
-                <div class="form-group">
+                <p class="text-muted" ng-if="!user.password_hash">You have not set your password for this application.</p>
+                <div class="form-group" ng-if="user.password_hash">
+                    <a class="pull-right" href="#/forgotpass">I forgot my password</a>
                     <label>Current Password</label>
-                    <input type="password" class="form-control" ng-model="form_password.old" name="old" required/>
+                    <input type="password" class="form-control" ng-model="form_password.old" required/>
                 </div>
                 <div class="form-group">
                     <label>New Password</label>
-                    <input type="password" class="form-control" ng-model="form_password.new" name="new" required/>
+                    <input type="password" class="form-control" ng-model="form_password.new" required/>
                     <!-- see https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/ -->
                     <password-strength password="form_password.new" user="user" profile="menu._profile"></password-strength>
                 </div>
                 <div class="form-group">
                     <label>Confirm New Password</label>
-                    <input type="password" class="form-control" ng-model="form_password.new_confirm" name="new_confirm" required/>
-                    <div class="alert alert-warning" ng-if="form_password.new_confirm && form_password.new != form_password.new_confirm">Password does not match!</div>
+                    <input type="password" class="form-control" ng-model="form_password.confirm" match="form_password.confirm != form_password.new? 'Passwords don\'t match' : ''"/>
                 </div>
-                <a class="pull-right" href="#/forgotpass">I forgot my password</a>
                 <input type="submit" class="btn" value="Update Password"/>
             </form><!--profile form-->
         </li>

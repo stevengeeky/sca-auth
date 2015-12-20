@@ -50,13 +50,15 @@ router.get('/config', function(req, res) {
 });
 
 //returns things that user might want to know about himself.
+//password_hash will be set to true if the password is set, otherwise null
 router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
     db.User.findOne({
         where: {id: req.user.sub},
-        attributes: ['username', 'email', 'iucas', 'googleid', 'gitid', 'x509dns', 'times'],
+        attributes: ['username', 'email', 'iucas', 'googleid', 'gitid', 'x509dns', 'times', 'password_hash'],
     }).then(function(user) {
-        if(user) res.json(user);
-        else res.status(404).end();
+        if(!user) return res.status(404).end();
+        if(user.password_hash) user.password_hash = true;
+        res.json(user);
     });
 });
 

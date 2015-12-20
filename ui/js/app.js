@@ -12,6 +12,19 @@ var app = angular.module('app', [
     'sca-shared',
 ]);
 
+//http://wijmo.com/easy-form-validation-in-angularjs/
+app.directive('match', function () {
+  return {
+    require: 'ngModel',
+    link: function (scope, elm, attrs, ctl) {
+      scope.$watch(attrs['match'], function (errorMsg) {
+        elm[0].setCustomValidity(errorMsg);
+        ctl.$setValidity('match', errorMsg ? false : true);
+      });
+    }
+  };
+});
+
 /*
 app.config(['appconf', '$httpProvider', 'jwtInterceptorProvider', function(appconf, $httpProvider, jwtInterceptorProvider) {
     jwtInterceptorProvider.tokenGetter = [function(myService) {
@@ -132,9 +145,9 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         templateUrl: 't/signout.html',
         controller: 'SignoutController'
     })
-    .when('/setpass', {
-        templateUrl: 't/setpass.html',
-        controller: 'SetpassController',
+    .when('/complete', {
+        templateUrl: 't/complete.html',
+        controller: 'CompleteController',
         requiresLogin: true
     })
     /*

@@ -37,17 +37,22 @@
         var casticket = getParameterByName('casticket');
         $http.get(appconf.api+'/iucas/verify?casticket='+casticket)
         .then(function(res) {
-            scaMessage.success('Signed in successfully');
             localStorage.setItem(appconf.jwt_id, res.data.jwt);
-            if(res.data.need_setpass) {
-                window.location = './#/setpass';
+            if(res.data.registered) {
+                window.location = './#/complete';
             } else {
+                scaMessage.success('Signed in successfully');
                 var redirect = sessionStorage.getItem('auth_redirect');
-                //if(!redirect) redirect = './#/settings'; //we really don't want to get stuck on iucascb.html
-                //if(!redirect) redirect = appconf.default_redirect_url;
-                //document.location = redirect;
                 window.location = redirect; 
             }
+            /*
+            if(res.data.need_profile) {
+                window.location = './#/complete';
+            } else {
+                var redirect = sessionStorage.getItem('auth_redirect');
+                window.location = redirect; 
+            }
+            */
         }, function(res) {
             console.log("token verification failed");
             console.dir(res.data);
