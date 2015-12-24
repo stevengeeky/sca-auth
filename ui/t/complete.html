@@ -28,7 +28,9 @@
                     </div>
                     <div class="form-group">
                         <label>Password (Confirm)</label>
-                        <input type="password" class="form-control" ng-model="form.password_confirm" match="form.password_confirm != form.password ? 'Passwords don\'t match' : ''"/>
+                        <input type="password" class="form-control" 
+                            ng-model="form.password_confirm" 
+                            match="form.password_confirm != form.password ? 'Passwords don\'t match' : ''"/>
                     </div>
                 </div>
             </div>

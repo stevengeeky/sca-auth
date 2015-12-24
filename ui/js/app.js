@@ -13,6 +13,7 @@ var app = angular.module('app', [
 ]);
 
 //http://wijmo.com/easy-form-validation-in-angularjs/
+//note - error message only shows when user submit the form
 app.directive('match', function () {
   return {
     require: 'ngModel',
