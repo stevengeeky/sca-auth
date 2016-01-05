@@ -65,7 +65,7 @@ router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
 
 //return list of all users (minus password)
 router.get('/users', jwt({secret: config.auth.public_key}), function(req, res) {
-    if(!~req.user.scopes.common.indexOf("admin")) return res.send(401);
+    if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
     db.User.findAll({
         //password_hash is replace by true/false right below
         attributes: [
@@ -82,7 +82,7 @@ router.get('/users', jwt({secret: config.auth.public_key}), function(req, res) {
 
 //return detail from just one user (somewhat redundant from /users ??)
 router.get('/user/:id', jwt({secret: config.auth.public_key}), function(req, res) {
-    if(!~req.user.scopes.common.indexOf("admin")) return res.send(401);
+    if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
     db.User.findOne({
         where: {id: req.params.id},
         attributes: [
@@ -94,7 +94,7 @@ router.get('/user/:id', jwt({secret: config.auth.public_key}), function(req, res
     });
 });
 router.put('/user/:id', jwt({secret: config.auth.public_key}), function(req, res, next) {
-    if(!~req.user.scopes.common.indexOf("admin")) return res.send(401);
+    if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
     db.User.findOne({where: {id: req.body.id}}).then(function(user) {
         if (!user) return next(new Error("can't find user id:"+req.body.id));
         user.update(req.body).then(function(err) {
