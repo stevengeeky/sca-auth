@@ -28,3 +28,10 @@ If a user has multiple account, trying to associate with same IUCAS account ends
 Don't forward jwt to pages under domain that's not configured to do so (by default, it should limit to the same-origin domain name)
 
 iucas/register_newuser. If the uid is already registered, instead of veto-ing, forward user to a special login page and once logged in successfully, associate the IUCAS IU to the user account
+
+Email confirmation
+
+Make sure only root (or allowed group of users) can issue token via CLI
+
+Allow admin to reset password via administration/users pagee
+Allow user to reset his/her own password

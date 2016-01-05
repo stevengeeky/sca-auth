@@ -1,0 +1,36 @@
+<div class="header">
+    <h2>Administration</h2>
+</div>
+<sca-menutab menu="admin_menu" active="'adminusers'" user="menu.user"></sca-menutab>
+<div class="container-fluid">
+    <ul class="list-group">
+        <li class="list-group-item" ng-repeat="user in users">
+            <div class="pull-right edit_button">
+                <button type="button" ng-click="edit(user)" class="btn btn-xs pull-right"><i class="fa fa-pencil-square-o"></i></button>
+            </div>
+            <h4><small class="text-muted">{{user.id}}</small> {{user.username}} 
+                <span class="label label-danger" ng-if="user.active == false">Inactive</span>
+            </h4>
+            <p>
+                <span> {{user.email}} <span class="label label-success" ng-if="user.email_confirmed">Confirmed</span> | </span>
+                <span ng-if="user.x509dns"> X509DNs: {{user.x509dns}} | </span>
+                <span ng-if="user.iucas">IUCAS: {{user.iucas}} | </span>
+                <span ng-if="user.googleid">Google ID: {{user.googleid}} | </span>
+                <span ng-if="user.gitid">Git ID: {{user.gitid}} | </span>
+                <span ng-if="user.password_hash" class="label label-warning">password set</span>
+            </p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <b>Scopes</b>
+                    <small><pre>{{user.scopes|json}}</pre></small>
+                </div>
+                <div class="col-md-6">
+                    <b>Timestamps</b>
+                    <small><pre>{{user.times|json}}</pre></small>
+                </div>
+            </div><!--row-->
+        </li>
+    </ul>
+</div>
+

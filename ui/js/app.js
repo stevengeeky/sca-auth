@@ -25,6 +25,34 @@ app.directive('match', function () {
     }
   };
 });
+app.directive('validjson', function () {
+  return {
+    require: 'ngModel',
+    link: function (scope, elm, attrs, ctrl) {
+        /*
+        scope.$watch(elm[0].value, function (errorMsg) {
+            console.log("validating");
+            console.log(elm[0].value);
+            elm[0].setCustomValidity("invalid for whatever");
+            ctl.$setValidity('validjson', false);
+        });
+        */
+        ctrl.$parsers.unshift(function(value) {
+            var valid = true;
+            try {
+                JSON.parse(value);
+                elm[0].setCustomValidity('');
+            } catch (e) {
+                elm[0].setCustomValidity("Couldn't parse JSON");
+                valid = false;
+            }
+            ctrl.$setValidity('validjson', valid);
+            return valid ? value : undefined;
+        });
+    }
+  };
+});
+
 
 /*
 app.config(['appconf', '$httpProvider', 'jwtInterceptorProvider', function(appconf, $httpProvider, jwtInterceptorProvider) {
@@ -151,12 +179,6 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         controller: 'CompleteController',
         requiresLogin: true
     })
-    /*
-    .when('/success', {
-        templateUrl: 't/empty.html',
-        controller: 'SuccessController'
-    })
-    */
     .when('/forgotpass', {
         templateUrl: 't/forgotpass.html',
         controller: 'ForgotpassController'
@@ -165,18 +187,21 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         templateUrl: 't/signup.html',
         controller: 'SignupController'
     })
-    .when('/settings', {
-        templateUrl: 't/settings.html',
-        controller: 'SettingsController',
+    .when('/settings/account', {
+        templateUrl: 't/account.html',
+        controller: 'AccountController',
         requiresLogin: true
     })
-    /*
-    .when('/debug', {
-        templateUrl: 't/debug.html',
-        controller: 'DebugController',
+    .when('/admin/users', {
+        templateUrl: 't/adminusers.html',
+        controller: 'AdminUsersController',
         requiresLogin: true
     })
-    */
+    .when('/admin/user/:id', {
+        templateUrl: 't/adminuser.html',
+        controller: 'AdminUserController',
+        requiresLogin: true
+    })
     .otherwise({
         redirectTo: '/signin'
     });

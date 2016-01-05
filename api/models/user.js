@@ -13,16 +13,16 @@ var logger = new winston.Logger(config.logger.winston);
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('User', {
         
-        //for user/pass login
         username: Sequelize.STRING,
-        email: Sequelize.STRING, //TODO implement email velification?
 
+        email: Sequelize.STRING,  //profile email is stored in profile service db
+        email_confirmed: { type: Sequelize.BOOLEAN, defaultValue: false }, //TODO
+
+        //might not be set if user register via 3rd party login
         password_hash: Sequelize.STRING,
 
-        //used to reset password
+        //used to reset password (via email?)
         password_reset_token: Sequelize.STRING,
-
-        email_confirmed: { type: Sequelize.BOOLEAN, defaultValue: false },
 
         //for 3rd party login
         iucas: Sequelize.STRING,
@@ -41,52 +41,10 @@ module.exports = function(sequelize, DataTypes) {
             }
         },
 
-        //login_date: Sequelize.DATE,         //last login date
-
-        //timestamps of various events (login timestamp, etc..)
-        /*
-        times: {
-            type: Sequelize.TEXT,
-            get: function () { 
-                var times = this.getDataValue('times');
-                console.dir(times);
-                if(typeof times == 'string') return JSON.parse(times);
-                return {};
-            },
-            set: function (times) {
-                return this.setDataValue('times', JSON.stringify(times));
-            }
-        },
-        */
         times: JsonField(sequelize, 'User', 'times'),
-        
-        //use createdAt instead
-        //signup_date: Sequelize.DATE,        //when user signed up.. 
-
-        //jwt token scopes (authorization)
-        /*
-        scopes: {
-            type: Sequelize.TEXT,
-            //defaultValue: "{}",  always initizlied to some default scope during creation, so this shouldn't be needed
-            get: function() {
-                if(!this.getDataValue('scopes')) return {};
-                try {
-                    return JSON.parse(this.getDataValue('scopes'));
-                } catch (e) {
-                    logger.error("Failed to parse user scopes");
-                    logger.error(this.getDataValue('scopes'));
-                    return null;
-                }
-            },
-            set: function(o) {
-                return this.setDataValue('scopes', JSON.stringify(o));
-            }
-        },
-        */
         scopes: JsonField(sequelize, 'User', 'scopes'),
-
-        //prevent user from loggin in (usually temporarily)
-        active: { type: Sequelize.BOOLEAN, defaultValue: true }
+        
+        active: { type: Sequelize.BOOLEAN, defaultValue: true } //TODO prevent user from loggin in (usually temporarily)
 
     }, {
         classMethods: {

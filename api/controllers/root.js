@@ -54,12 +54,54 @@ router.get('/config', function(req, res) {
 router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
     db.User.findOne({
         where: {id: req.user.sub},
-        attributes: ['username', 'email', 'iucas', 'googleid', 'gitid', 'x509dns', 'times', 'password_hash'],
+        //password_hash is replace by true/false right below
+        attributes: ['username', 'email', 'email_confirmed', 'iucas', 'googleid', 'gitid', 'x509dns', 'times', 'password_hash'],
     }).then(function(user) {
         if(!user) return res.status(404).end();
         if(user.password_hash) user.password_hash = true;
         res.json(user);
     });
 });
+
+//return list of all users (minus password)
+router.get('/users', jwt({secret: config.auth.public_key}), function(req, res) {
+    if(!~req.user.scopes.common.indexOf("admin")) return res.send(401);
+    db.User.findAll({
+        //password_hash is replace by true/false right below
+        attributes: [
+            'id', 'username', 'password_hash', 
+            'email', 'email_confirmed', 'iucas', 'googleid', 'gitid', 'x509dns', 
+            'times', 'scopes', 'active'],
+    }).then(function(users) {
+        users.forEach(function(user) {
+            if(user.password_hash) user.password_hash = true;
+        });
+        res.json(users);
+    });
+});
+
+//return detail from just one user (somewhat redundant from /users ??)
+router.get('/user/:id', jwt({secret: config.auth.public_key}), function(req, res) {
+    if(!~req.user.scopes.common.indexOf("admin")) return res.send(401);
+    db.User.findOne({
+        where: {id: req.params.id},
+        attributes: [
+            'id', 'username', 
+            'email', 'email_confirmed', 'iucas', 'googleid', 'gitid', 'x509dns', 
+            'times', 'scopes', 'active'],
+    }).then(function(user) {
+        res.json(user);
+    });
+});
+router.put('/user/:id', jwt({secret: config.auth.public_key}), function(req, res, next) {
+    if(!~req.user.scopes.common.indexOf("admin")) return res.send(401);
+    db.User.findOne({where: {id: req.body.id}}).then(function(user) {
+        if (!user) return next(new Error("can't find user id:"+req.body.id));
+        user.update(req.body).then(function(err) {
+            res.json({message: "User updated successfully"});
+        });
+    });
+});
+
 
 module.exports = router;

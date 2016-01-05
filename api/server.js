@@ -31,7 +31,7 @@ app.use(cookieParser()); //TODO - do we really need this?
 app.use(jwt_helper.tokenParser());
 app.use(passport.initialize());//needed for express-based application
 
-app.use('/', require('./router'));
+app.use('/', require('./controllers'));
 
 /*
 app.use(function(req, res, next) {

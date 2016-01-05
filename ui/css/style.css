@@ -38,3 +38,9 @@ body {
   cursor: pointer;
   background-color: #ccc;
 }
+.edit_button {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  z-order: 1;
+}
