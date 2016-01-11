@@ -78,7 +78,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
             var redirect = sessionStorage.getItem('auth_redirect');
             window.location = redirect; 
         }, function(res) {
-            console.dir(res);
+            //console.dir(res);
             toaster.error(res.data.message);
         }); 
     }
@@ -172,7 +172,7 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
         });
     }
     function set_pass(cb) {
-        console.dir($scope.form);
+        //console.dir($scope.form);
         $http.put(appconf.api+'/local/setpass', {password: $scope.form.password})
         .then(function(res) {
             cb(res);
