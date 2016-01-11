@@ -266,6 +266,7 @@ app.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster'
 function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $location, scaMessage) {
     $scope.$parent.active_menu = 'user'; //TODO - is there a better menu?
     scaMessage.show(toaster);
+    $scope.appconf = appconf;
 }]);
 
 app.directive('passwordStrength', function() {
