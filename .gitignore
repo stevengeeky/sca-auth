@@ -2,6 +2,7 @@
 ui/bower_components
 node_modules
 api/config
+ui/config.js
 nohup*.out
 **/*.log
 debug

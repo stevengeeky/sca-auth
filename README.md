@@ -35,3 +35,4 @@ Make sure only root (or allowed group of users) can issue token via CLI
 
 Allow admin to reset password via administration/users pagee
 Allow user to reset his/her own password
+Add event table logging all authentication related events (change password, etc..)
