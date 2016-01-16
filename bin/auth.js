@@ -16,7 +16,7 @@ var argv = require('optimist').argv;
 var winston = require('winston');
 var jwt = require('jsonwebtoken');
 var fs = require('fs');
-//var _ = require('underscore');
+var _ = require('underscore');
 
 //mine
 var config = require('../api/config');
@@ -73,6 +73,7 @@ function modscope() {
         process.exit(1);
     }
 
+    /*
     function add(base, sub) {
         if(typeof sub == 'object' && sub.constructor == Array) {
             sub.forEach(function(item) {
@@ -85,6 +86,21 @@ function modscope() {
             }
         }
     }
+    */
+    function add(base, sub) {
+        if(sub.constructor == Array) {
+            sub.forEach(function(item) {
+                if(!~base.indexOf(item)) base.push(item);
+            });
+        } else {
+            for(var k in sub) {
+                if(base[k] === undefined) base[k] = sub[k];
+                else add(base[k], sub[k]);
+            }
+        }
+        return base;
+    }
+
 
     function del(base, sub) {
         if(typeof sub == 'object' && sub.constructor == Array) {
@@ -97,6 +113,7 @@ function modscope() {
                 if(base[k] !== undefined) del(base[k], sub[k]);
             }
         }
+        return base;
     }
 
     db.User.findOne({where: {"username": argv.username}})
@@ -105,22 +122,20 @@ function modscope() {
         return user;
     })
     .then(function(user) {
-        logger.debug("before");
-        logger.debug(JSON.stringify(user, null, 4));
+        //logger.debug("before");
+        //logger.debug(JSON.stringify(user, null, 4));
         if(argv.set) {
             user.scopes = JSON.parse(argv.set);
         }
         if(argv.add) {
-            //user.scopes = set(user.scopes, JSON.parse(argv.add));
-            add(user.scopes, JSON.parse(argv.add));
+            user.scopes = add(_.clone(user.scopes), JSON.parse(argv.add));
         }
         if(argv.del) {
-            //user.scopes = _.difference(user.scopes, JSON.parse(argv.del));
-            del(user.scopes, JSON.parse(argv.del));
+            user.scopes = del(_.clone(user.scopes), JSON.parse(argv.del));
         }
         user.save().then(function() {
-            logger.info("after (user needs to re-signin for this to take an effect)");
-            logger.debug(JSON.stringify(user, null, 4));
+            //logger.info("after (user needs to re-signin for this to take an effect)");
+            //logger.debug(JSON.stringify(user, null, 4));
         }).catch(function(err) {
             logger.error(err);
         });
