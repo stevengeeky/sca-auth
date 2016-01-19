@@ -17,7 +17,7 @@
                 <label>Full Name</label>
                 <input type="text" class="form-control" ng-model="form.fullname" name="fullname" required/>
             </div>
-            <div class="panel panel-default">
+            <div class="panel panel-default" ng-if="serverconf.local">
                 <div class="panel-body">
                     <p>Although you can signin to this application using your 3rd party authentication service, it's good to have another way to signin in case you have problem with your 3rd party authentication service.</p>
                     <p>If you'd like to use the application's built in username / password authentication, please choose your password.</p>

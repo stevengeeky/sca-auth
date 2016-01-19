@@ -138,12 +138,13 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
     }
 }]);
 
-app.controller('CompleteController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage',
-function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage) {
+app.controller('CompleteController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', 'scaMessage', 'serverconf', 
+function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMessage, serverconf) {
     $scope.$parent.active_menu = 'complete';
     scaMessage.show(toaster);
     var jwt = localStorage.getItem(appconf.jwt_id);
     var user = jwtHelper.decodeToken(jwt);
+    serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
     
     //stores form
     $scope.form = {};
