@@ -58,7 +58,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
             sessionStorage.removeItem('auth_redirect');
             document.location = redirect;
         }, function(res) {
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         }); 
     }
 
@@ -78,8 +79,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
             var redirect = sessionStorage.getItem('auth_redirect');
             window.location = redirect; 
         }, function(res) {
-            //console.dir(res);
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         }); 
     }
 
@@ -130,10 +131,12 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
                 sessionStorage.removeItem('auth_redirect');
                 document.location = redirect;
             }, function(res) {
-                toaster.error(res.data.message);
+                if(res.data && res.data.message) toaster.error(res.data.message);
+                else toaster.error(res.statusText);
             });
         }, function(res) {
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         });         
     }
 }]);
@@ -154,7 +157,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
         $scope.form.username = res.data.username;
         $scope.form.email = res.data.email;
     }, function(res) {
-        toaster.error(res.data.message);
+        if(res.data && res.data.message) toaster.error(res.data.message);
+        else toaster.error(res.statusText);
     }); 
 
     //decide where to go after setting password
@@ -169,7 +173,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
         }).then(function(res) {
             cb(res);
         }, function(res) {
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         });
     }
     function set_pass(cb) {
@@ -178,7 +183,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
         .then(function(res) {
             cb(res);
         }, function(res) {
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         });         
     }
     function alldone() {
@@ -226,7 +232,8 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
             toaster.success(res.data.message);
             $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
         }, function(res, status, headers, config) {
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         });
     }
 
@@ -236,7 +243,8 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
             toaster.success(res.data.message);
             $scope.user = res.data.user;
         }, function(res) {
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         });
     }
 
@@ -257,7 +265,8 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
             toaster.success(res.data.message);
             $scope.user = res.data.user;
         }, function(res, status, headers, config) {
-            toaster.error(res.data.message);
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
         }); 
     }
 
