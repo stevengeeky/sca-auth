@@ -2,7 +2,7 @@
 //contrib
 var express = require('express');
 var router = express.Router();
-var jwt_helper = require('../jwt_helper');
+var common = require('../common');
 var winston = require('winston');
 
 //mine
@@ -34,18 +34,25 @@ router.post('/', function(req, res, next) {
     db.User.findOne({where: {username: username} }).then(function(user) {
         if(user) {
             //TODO - maybe I should go ahead and forward user to login form?
-            return next(new Error('The username you chose is already registered. If it is yours, please try signing in, or register with a different username.'));
+            return next('The username you chose is already registered. If it is yours, please try signing in, or register with a different username.');
         } else {
             //check for email already taken
             db.User.findOne({where: {email: email} }).then(function(user) {
                 if(user) {
                     //TODO - maybe I should go ahead and forward user to login form?
-                    return next(new Error('The email address you chose is already registered. If it is yours, please try signing in, or register with a different email address.'));
+                    return next('The email address you chose is already registered. If it is yours, please try signing in, or register with a different email address.');
                 } else {
                     registerUser(req.body, function(user) {
-                        var claim = jwt_helper.createClaim(user);
-                        var jwt = jwt_helper.signJwt(claim);
-                        res.json({message: "Successfully Registered!", jwt: jwt, sub: user.id});
+                        var claim = common.createClaim(user);
+                        var jwt = common.signJwt(claim);
+                        if(config.email_confirmation) {
+                            common.send_email_confirmation(req.headers.referer, user, function(err) {
+                                if(err) return next(err);
+                                res.json({code:'confirm_email', jwt: jwt, sub: user.id});
+                            });
+                        } else {
+                            res.json({jwt: jwt, sub: user.id});
+                        }
                     });        
                 }
             });

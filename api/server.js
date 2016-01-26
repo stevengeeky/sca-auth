@@ -11,7 +11,6 @@ var bodyParser = require('body-parser');
 var expressValidator = require('express-validator');
 var Sequelize = require('sequelize');
 var passport = require('passport');
-var jwt_helper = require('./jwt_helper');
 var winston = require('winston');
 var expressWinston = require('express-winston');
 
@@ -20,6 +19,7 @@ var config = require('./config');
 var logger = new winston.Logger(config.logger.winston);
 var db = require('./models');
 var migration = require('./migration');
+//var common = require('./common');
 
 //init express
 var app = express();
@@ -28,7 +28,7 @@ app.use(bodyParser.json()); //parse application/json
 app.use(bodyParser.urlencoded({extended: false})); //parse application/x-www-form-urlencoded //TODO - do we need this?
 app.use(expressWinston.logger(config.logger.winston)); 
 app.use(cookieParser()); //TODO - do we really need this?
-app.use(jwt_helper.tokenParser());
+//app.use(common.tokenParser());
 app.use(passport.initialize());//needed for express-based application
 
 app.use('/', require('./controllers'));
@@ -51,10 +51,14 @@ app.use(function(err, req, res, next) {
 //error handling
 app.use(expressWinston.errorLogger(config.logger.winston));
 app.use(function(err, req, res, next) {
+    if(typeof err == "string") err = {message: err};
+    if(err.stack) {
+        logger.info(err.stack);
+        err.stack = "hidden"; //let's hide callstack
+    }
     logger.info(err);
-    if(err.stack) logger.info(err.stack);
     res.status(err.status || 500);
-    res.json({message: err.message, /*stack: err.stack*/}); //let's hide callstack for now
+    res.json(err);
 });
 
 process.on('uncaughtException', function (err) {

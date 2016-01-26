@@ -7,8 +7,6 @@ var jwt = require('express-jwt');
 
 //mine
 var config = require('../config');
-var jwt_helper = require('../jwt_helper');
-//var db = require('./models');
 
 router.use('/', require('./root'));
 router.use('/signup', require('./signup'));

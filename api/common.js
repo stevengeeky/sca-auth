@@ -1,11 +1,17 @@
 
-var jwt = require('jsonwebtoken');
+//node
 var fs = require('fs');
+
+//contrib
+var jwt = require('jsonwebtoken');
+var uuid = require('node-uuid');
+var nodemailer = require('nodemailer');
 var uuid = require('node-uuid');
 
+//mine
 var config = require('./config');
-var service_name = "auth";
 
+//var service_name = "auth";
 //var jwt_publickey = fs.readFileSync('./config/auth.pub', {encoding: 'ascii'});
 //var jwt_privatekey = fs.readFileSync('./config/auth.key', {encoding: 'ascii'});
 
@@ -46,6 +52,36 @@ exports.signJwt = function(claim) {
     return jwt.sign(claim, config.auth.private_key, config.auth.sign_opt);
 }
 
+function do_send_email_confirmation(url, user, cb) {
+    var fullurl = url+"#/confirm_email?t="+user.email_confirmation_token+"&sub="+user.id;
+
+    var transporter = nodemailer.createTransport(); //use direct mx transport
+    transporter.sendMail({
+        from: config.email_confirmation.from,
+        to: user.email,
+        subject: config.email_confirmation.subject,
+        text: "Hello!\nPlease open following URL on your browser to confirm your email address.\n\n"+ fullurl,
+        //html:  ejs.render(html_template, params),
+    }, function(err, info) {
+        if(err) return cb(err);
+        if(info && info.response) logger.info("notification sent: "+info.response);
+        cb();
+    });
+}
+
+exports.send_email_confirmation = function(url, user, cb) {
+    
+    //need to generate token if it's not set yet
+    if(!user.email_confirmation_token) {
+        user.email_confirmation_token = uuid.v4();
+        user.save().then(function() {
+            do_send_email_confirmation(url, user, cb);
+        });
+    } else {
+        do_send_email_confirmation(url, user, cb);
+    }
+}
+
 //probbably deprecated
 exports.setJwtCookies = function(claim, res) {
     var token = exports.signJwt(claim);
@@ -69,6 +105,7 @@ exports.clearToken = function(res) {
 }
 */
 
+/* handle jwt sent via cookie
 exports.tokenParser = function() {
     return function(req, res, next) {
         if(req.cookies && req.cookies.jwt) {
@@ -87,6 +124,7 @@ exports.tokenParser = function() {
         }
     };
 }
+*/
 
 /* not implemented yet
 //use this to check for authorization. if fails, it redirects to /auth

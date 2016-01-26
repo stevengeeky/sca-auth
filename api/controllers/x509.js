@@ -10,12 +10,12 @@ var jwt = require('express-jwt');
 var config = require('../config');
 var logger = new winston.Logger(config.logger.winston);
 
-var jwt_helper = require('../jwt_helper');
+var common = require('../common');
 var db = require('../models');
 
 function finduserByDN(dn, done) {
     db.User.findOne({where: {x509dns: {$like: "%\""+dn+"\"%"}}}).then(function(user) {
-        if (!user) return done(null, false, { message: "Couldn't find registered DN:"+dn});
+        //if (!user) return done("Couldn't find registered DN:"+dn);
         return done(null, user);
     });
 }
@@ -67,8 +67,8 @@ function register_newuser(dn, uid, res, next) {
 function issue_jwt(user, dn, cb) {
     user.updateTime('x509_login:'+dn);
     user.save().then(function() {
-        var claim = jwt_helper.createClaim(user);
-        var jwt = jwt_helper.signJwt(claim);
+        var claim = common.createClaim(user);
+        var jwt = common.signJwt(claim);
         cb(jwt);
         /*
         var need_setpass = (!user.password_hash);
@@ -95,23 +95,19 @@ router.get('/auth', /*jwt({secret: config.auth.public_key, credentialsRequired: 
     var dn = req.headers[config.x509.dn_header];
     if(!dn) {
         console.dir(req.headers);
-        return next(new Error("Couldn't find x509 DN (maybe configuration issue?)"));
+        return next("Couldn't find x509 DN (maybe configuration issue?)");
     }
-    finduserByDN(dn, function(err, user, msg) {
-        if(err) {
-            res.status("500"); //TODO - why don't I send error message back? for security?
-            return res.end();
-        }
-        if(!user) {
-            //TODO - create new user, and forwward user to a page to set username / email. etc..
-            res.status(400).json({message: "Your DN("+dn+") is not yet registered. Please Signup/Signin with your username/password first, then associate your x509 certificate under your account settings."});
-        } else {
-            //all good. issue token
-            logger.debug("x509 authentication successful with "+dn);
-            issue_jwt(user, dn, function(jwt) {
-                res.json({jwt:jwt});
-            });
-        }
+    finduserByDN(dn, function(err, user) {
+        if(err) return next(err); 
+        if(!user) return next("Your DN("+dn+") is not yet registered. Please Signup/Signin with your username/password first, then associate your x509 certificate under your account settings.");
+        var err = user.check();
+        if(err) return next(err);
+        
+        //all good. issue token
+        logger.debug("x509 authentication successful with "+dn);
+        issue_jwt(user, dn, function(jwt) {
+            res.json({jwt:jwt});
+        });
     });
 });
 
@@ -120,15 +116,15 @@ router.get('/connect', jwt({secret: config.auth.public_key}), function(req, res,
     var dn = req.headers[config.x509.dn_header];
     if(!dn) {
         console.dir(req.headers);
-        return next(new Error("Couldn't find x509 DN (maybe configuration issue?)"));
+        return next("Couldn't find x509 DN (maybe configuration issue?)");
     }
-    finduserByDN(dn, function(err, user, msg) {
-        if(err) return res.status("500").end();
+    finduserByDN(dn, function(err, user) {
+        if(err) return next(err); 
         if(!user) {
             //associate(req.user, dn, res);
             logger.info("associating user with x509 DN "+dn);
             db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
-                if(!user) throw new Error("couldn't find user record with jwt.sub:"+req.user.sub);
+                if(!user) return next("couldn't find user record with jwt.sub:"+req.user.sub);
                 var dns = user.get('x509dns');
                 if(!~dns.indexOf(dn)) dns.push(dn);
                 user.set('x509dns', dns);

@@ -50,7 +50,6 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
 
     $scope.userpass = {};
     $scope.submit = function() {
-        //console.dir($scope.userpass);
         $http.post(appconf.api+'/local/auth', $scope.userpass)
         .then(function(res) {
             scaMessage.success(res.data.message);
@@ -60,6 +59,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         }, function(res) {
             if(res.data && res.data.message) toaster.error(res.data.message);
             else toaster.error(res.statusText);
+            var hash = handle_auth_issues(res);
+            if(hash) document.location = hash;
         }); 
     }
 
@@ -81,6 +82,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, $loca
         }, function(res) {
             if(res.data && res.data.message) toaster.error(res.data.message);
             else toaster.error(res.statusText);
+            var hash = handle_auth_issues(res);
+            if(hash) document.location = hash;
         }); 
     }
 
@@ -126,10 +129,16 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
                 email: $scope.form.email,
                 fullname: $scope.form.fullname,
             })
-            .then(function(res) {
-                scaMessage.success("Successfully signed up!");
-                sessionStorage.removeItem('auth_redirect');
-                document.location = redirect;
+            .then(function(_res) {
+                if(res.data.code) {
+                    //need a bit more work (like confirming email)
+                    var hash = handle_auth_issues(res);
+                    document.location = hash;
+                } else {
+                    scaMessage.success("Successfully signed up!");
+                    sessionStorage.removeItem('auth_redirect');
+                    document.location = redirect;
+                }
             }, function(res) {
                 if(res.data && res.data.message) toaster.error(res.data.message);
                 else toaster.error(res.statusText);
@@ -325,70 +334,12 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
     $scope.edit = function(user) {
         window.location = "#/admin/user/"+user.id;
     }
-    /*
-
-    $scope.public_profile = profile.pub;
-    $scope.user = null;
-    $scope.form_password = {};
-    scaMessage.show(toaster);
-
-    //for debug pane
-    var jwt = localStorage.getItem(appconf.jwt_id);
-    var user = jwtHelper.decodeToken(jwt);
-    $scope.user = user;
-    $scope.debug = {jwt: user};
-
-    serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
-    $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
-
-    $scope.submit_password = function() {
-        //if($scope.form_password.new == $scope.form_password.new_confirm) {
-        $http.put(appconf.api+'/local/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
-        .then(function(res, status, headers, config) {
-            toaster.success(res.data.message);
-            $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
-        }, function(res, status, headers, config) {
-            toaster.error(res.data.message);
-        });
-    }
-
-    $scope.disconnect = function(type, data) {
-        $http.put(appconf.api+'/'+type+'/disconnect', data)
-        .then(function(res) {
-            toaster.success(res.data.message);
-            $scope.user = res.data.user;
-        }, function(res) {
-            toaster.error(res.data.message);
-        });
-    }
-
-    $scope.iucas_connect = function() {
-        sessionStorage.setItem('auth_redirect', window.location.href); 
-        var casurl = window.location.origin+window.location.pathname+'iucascb.html';
-        window.location = appconf.iucas_url+'?cassvc=IU&casurl='+casurl;
-    }
-    $scope.git_connect = function() {
-        toaster.info("git_connect todo");
-    }
-    $scope.google_connect = function() {
-        toaster.info("google_connect todo");
-    }
-    $scope.x509_connect = function() {
-        $http.get(appconf.x509api+'/x509/connect') //, {headers: null})
-        .then(function(res, status, headers, config) {
-            toaster.success(res.data.message);
-            $scope.user = res.data.user;
-        }, function(res, status, headers, config) {
-            toaster.error(res.data.message);
-        }); 
-    }
-    */
 }]);
 
 app.controller('AdminUserController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu', '$routeParams', '$location',
 function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper, scaMessage, scaAdminMenu, $routeParams, $location) {
     scaMessage.show(toaster);
-    $scope.$parent.active_menu = 'admin';
+    $scope.$parent.active_menu = 'user';
     $scope.admin_menu = scaAdminMenu;
     serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
 
@@ -416,3 +367,44 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
         });
     }
 }]);
+
+app.controller('SendEmailConfirmationController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu', '$routeParams', '$location',
+function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, scaAdminMenu, $routeParams, $location) {
+    scaMessage.show(toaster);
+    $scope.$parent.active_menu = 'user';
+    //$scope.admin_menu = scaAdminMenu;
+    //serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
+
+}]);
+
+app.controller('ConfirmEmailController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu', '$routeParams', '$location',
+function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, scaAdminMenu, $routeParams, $location) {
+    scaMessage.show(toaster);
+    $scope.$parent.active_menu = 'user';
+    //$scope.admin_menu = scaAdminMenu;
+    //serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
+
+    $scope.resend = function() {
+        $http.post(appconf.api+'/send_email_confirmation', {sub: $routeParams.sub})
+        .then(function(res) { 
+            toaster.success(res.data.message);
+        }, function(res) {
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
+        });
+    }
+
+    //$scope.token = $routeParams.t;
+    if($routeParams.t) {
+        window.location = "#/";
+        $http.post(appconf.api+'/confirm_email', {token: $routeParams.t})
+        .then(function(res) { 
+            toaster.success(res.data.message);
+        }, function(res) {
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
+        });
+    }
+}]);
+
+

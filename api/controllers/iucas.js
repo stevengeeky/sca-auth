@@ -10,16 +10,12 @@ var jwt = require('express-jwt');
 var config = require('../config');
 var logger = new winston.Logger(config.logger.winston);
 
-var jwt_helper = require('../jwt_helper');
+var common = require('../common');
 var db = require('../models');
 
-function finduserByiucasid(id, done) {
+function finduserByiucasid(id, cb) {
     db.User.findOne({where: {"iucas": id}}).then(function(user) {
-        //console.dir(user);
-        if (!user) {
-            return done(null, false, { message: "Couldn't find registered IU CAS ID:"+id });
-        }
-        return done(null, user);
+        cb(null, user);
     });
 }
 
@@ -46,11 +42,9 @@ function register_newuser(uid, res, next) {
             logger.warn("username already registered:"+uid+"(can't auto register)");
             //TODO - instead of showing this error message, maybe I should redirect user to
             //a page to force user to login via user/pass, then associate the IU CAS IU once user logs in 
-            next({message: 
-                "This is the first time you login with IU CAS account, "+
-                "but we couldn't register this account since the username '"+uid+"' is already registered in our system. "+
-                "If you have already registered with username / password, please login with username / password first, "
-            });
+            next("This is the first time you login with IU CAS account, "+
+                 "but we couldn't register this account since the username '"+uid+"' is already registered in our system. "+
+                 "If you have already registered with username / password, please login with username / password first, ");
         } else {
             //brand new user - go ahead and create a new account using IU id as sca user id
             db.User.create({
@@ -71,8 +65,8 @@ function register_newuser(uid, res, next) {
 function issue_jwt(user, cb) {
     user.updateTime('iucas_login');
     user.save().then(function() {
-        var claim = jwt_helper.createClaim(user);
-        var jwt = jwt_helper.signJwt(claim);
+        var claim = common.createClaim(user);
+        var jwt = common.signJwt(claim);
         cb(jwt);
         /*
         var need_profile = (!user.password_hash);
@@ -86,7 +80,7 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
 
     //guess casurl using referer - TODO - should I use cookie and pass it from the UI method begin_iucas() instead?
     //var casurl = config.iucas.home_url;
-    if(!req.headers.referer) return next(new Error("Referer not set in header.."));
+    if(!req.headers.referer) return next("Referer not set in header..");
     casurl = req.headers.referer;
     
     //logger.debug("validating cas ticket:"+ticket+" casurl:"+casurl);
@@ -96,11 +90,8 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
             var reslines = body.split("\n");
             if(reslines[0].trim() == "yes") {
                 var uid = reslines[1].trim();
-                finduserByiucasid(uid, function(err, user, msg) {
-                    if(err) {
-                        res.status("500"); //TODO - why don't I send error message back? for security?
-                        return res.end();
-                    }
+                finduserByiucasid(uid, function(err, user) {
+                    if(err) return next(err);
                     if(!user) {
                         if(req.user) {
                             //If user is already logged in, but no iucas associated yet.. then auto-associate.
@@ -114,6 +105,9 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
                             register_newuser(uid, res, next);
                         }
                     } else {
+                        var err = user.check();
+                        if(err) return next(err);
+                        
                         //all good. issue token
                         logger.debug("iucas authentication successful. iu id:"+uid);
                         issue_jwt(user, function(jwt) {
@@ -127,7 +121,7 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
             }
         } else {
             //non 200 code...
-            next(new Error(body));
+            next(body);
         }
     })
 });

@@ -4,12 +4,12 @@
 <sca-menutab menu="admin_menu" active="'adminusers'" user="menu.user"></sca-menutab>
 <div class="container-fluid">
     <form ng-submit="submit()">
-        <div class="pull-right">
+        <h3>{{user.username}}</h3>
+        <div class="checkbox">
             <label>
-                <input type="checkbox" ng-model="user.active"> Account Active
+                <input type="checkbox" ng-model="user.active"> Active
             </label>
         </div>
-        <h3>{{user.username}}</h3>
         <div class="form-group">
             <label>Scope</label>
             <p class="help-block">TODO.. I will update this to a bit more user friendly esitor</p>

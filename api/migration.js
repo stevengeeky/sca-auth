@@ -41,6 +41,18 @@ var migrations = [
             next();
         });
     },
+    function(qi, next) {
+        logger.info("adding email_confirmed");
+        qi.addColumn('Users', 'email_confirmed', {type: Sequelize.BOOLEAN, defaultValue: false}).then(function() {
+            next();
+        });
+    },
+    function(qi, next) {
+        logger.info("adding email_confirmation_token");
+        qi.addColumn('Users', 'email_confirmation_token', {type: Sequelize.STRING, /*defaultValue: uuid.v4()*/}).then(function() {
+            next();
+        });
+    },
 ];
 
 exports.run = function() {
@@ -52,21 +64,20 @@ exports.run = function() {
                 //assume brand new - skip everything
                 return db.Migration.create({version: migrations.length}).then(resolve);
             } else {
-                var count = migrations.length;
+                //var count = migrations.length;
                 var ms = migrations.splice(info.version);
                 qi = db.sequelize.getQueryInterface();
                 async.eachSeries(ms, function(m, next) {
-                    m(qi, next); 
+                    m(qi, function(err) {
+                        if(err) return next(err);
+                        info.version++;
+                        next();
+                    }); 
                 }, function(err) {
-                    if(err) reject(err);
-                    else { 
-                        info.version = count; 
-                        info.save().then(function() {
-                            //logger.debug("done migration");
-                            //logger.debug(JSON.stringify(info, null, 4));
-                            resolve("migration complete");
-                        });
-                    }
+                    info.save().then(function() {
+                        if(err) reject(err);
+                        else resolve("migration complete");
+                    });
                 });
             }
         });

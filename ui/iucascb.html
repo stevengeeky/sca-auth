@@ -11,7 +11,9 @@
 
     <script src="../shared/config.js"></script>
     <script src="../shared/dist/shared.js"></script>
+
     <script src="config.js"></script>
+    <script src="common.js"></script>
 
     <script>
     function getParameterByName(name) {
@@ -38,21 +40,15 @@
         $http.get(appconf.api+'/iucas/verify?casticket='+casticket)
         .then(function(res) {
             localStorage.setItem(appconf.jwt_id, res.data.jwt);
-            if(res.data.registered) {
-                window.location = './#/complete';
-            } else {
-                scaMessage.success('Signed in successfully');
+            if(res.data.registered) window.location = './#/complete';
+            else {
+                //this is called by both iucas login and iucas connect in account
+                //.. and there is noway to distinguish which
+                //scaMessage.success('Signed in successfully'); 
+
                 var redirect = sessionStorage.getItem('auth_redirect');
                 window.location = redirect; 
             }
-            /*
-            if(res.data.need_profile) {
-                window.location = './#/complete';
-            } else {
-                var redirect = sessionStorage.getItem('auth_redirect');
-                window.location = redirect; 
-            }
-            */
         }, function(res) {
             console.log("token verification failed");
             console.dir(res.data);
@@ -61,8 +57,8 @@
             } else {
                 scaMessage.error('Failed to login with IU CAS :(');
             }
-            //document.location = './';  //move to index page
-            window.location = './';
+            var hash = handle_auth_issues(res);
+            document.location = hash?'./'+hash:'./';
         }); 
     }]);
     </script>

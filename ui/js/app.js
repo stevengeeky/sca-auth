@@ -202,6 +202,14 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         controller: 'AdminUserController',
         requiresLogin: true
     })
+    .when('/inactive', {
+        templateUrl: 't/inactive.html',
+        //controller: 'AdminUserController',
+    })
+    .when('/confirm_email', {
+        templateUrl: 't/confirm_email.html',
+        controller: 'ConfirmEmailController',
+    })
     .otherwise({
         redirectTo: '/signin'
     });
@@ -250,7 +258,12 @@ function(appconf, $http, jwtHelper, $sce, scaMessage, scaMenu, toaster) {
 
     var jwt = localStorage.getItem(appconf.jwt_id);
     if(jwt) {
-        var expdate = jwtHelper.getTokenExpirationDate(jwt);
+        try {
+            var expdate = jwtHelper.getTokenExpirationDate(jwt);
+        } catch (e) {
+            toaster.error(e);
+            localStorage.removeItem(appconf.jwt_id);
+        }
         var ttl = expdate - Date.now();
         if(ttl < 0) {
             toaster.error("Your login session has expired. Please re-sign in");

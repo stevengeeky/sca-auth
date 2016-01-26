@@ -10,17 +10,17 @@ body {
         <img class="logo" ng-src="{{logo_400_url}}"/>
         <div class="form-group" ng-if="serverconf.x509">
             <button type="button" class="btn btn-warning btn-block" ng-click="begin_x509()">
-                <i class="fa fa-certificate" style="font-size: 150%"></i> Signin with X509 Certificate
+                <i class="fa fa-certificate" style="font-size: 150%"></i> Login with X509 Certificate
             </button>
         </div>
         <div class="form-group" ng-if="serverconf.git">
             <button type="button" class="btn btn-primary btn-block" ng-click="begin_git()">
-                <i class="fa fa-github" style="font-size: 150%"></i> Signin with Github
+                <i class="fa fa-github" style="font-size: 150%"></i> Login with Github
             </button>
         </div>
         <div class="form-group" ng-if="serverconf.iucas">
             <button type="button" class="btn btn-danger btn-block" ng-click="begin_iucas()">
-                <img src="images/trident.png"/>&nbsp;&nbsp;&nbsp;Signin with IU Account
+                <img src="images/trident.png"/>&nbsp;&nbsp;&nbsp;Login with IU Account
             </button>
         </div>
         <div ng-if="serverconf.local">
@@ -42,7 +42,7 @@ body {
                     </div>
                 </div>
                 <div class="form-group">
-                    <input class="btn btn-block" type="submit" value="Sign In"/>
+                    <input class="btn btn-block" type="submit" value="Login"/>
                 </div>
             </form>
             <hr>

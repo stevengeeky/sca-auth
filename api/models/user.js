@@ -13,17 +13,19 @@ var logger = new winston.Logger(config.logger.winston);
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('User', {
         
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        //always filled
         username: Sequelize.STRING,
-
         email: Sequelize.STRING,  //profile email is stored in profile service db
         email_confirmed: { type: Sequelize.BOOLEAN, defaultValue: false }, //TODO
+        email_confirmation_token: Sequelize.STRING,
 
+        ///////////////////////////////////////////////////////////////////////////////////////////
         //might not be set if user register via 3rd party login
         password_hash: Sequelize.STRING,
-
-        //used to reset password (via email?)
-        password_reset_token: Sequelize.STRING,
-
+        password_reset_token: Sequelize.STRING, //used to reset password (via email?)
+        
+        ///////////////////////////////////////////////////////////////////////////////////////////
         //for 3rd party login
         iucas: Sequelize.STRING,
         googleid: Sequelize.STRING,
@@ -41,6 +43,8 @@ module.exports = function(sequelize, DataTypes) {
             }
         },
 
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        //
         times: JsonField(sequelize, 'User', 'times'),
         scopes: JsonField(sequelize, 'User', 'scopes'),
         
@@ -48,6 +52,7 @@ module.exports = function(sequelize, DataTypes) {
 
     }, {
         classMethods: {
+            /*
             //why is this here?
             createToken: function(user) {
                 var today = Math.round(Date.now()/1000);
@@ -65,8 +70,8 @@ module.exports = function(sequelize, DataTypes) {
                     token.scopes = user.scopes;
                 }
                 return token;
-            }
-
+            },
+            */
         },
         instanceMethods: {
             setPassword: function (password, cb) {
@@ -99,6 +104,13 @@ module.exports = function(sequelize, DataTypes) {
                 if(!times) times = {};
                 times[key] = new Date();
                 this.set('times', times); //not 100% if this is needed or not
+            },
+            check: function() {
+                if(!this.active) return {message: "Account is disabled.", code: "inactive"};
+                if(config.email_confirmation && this.email_confirmed !== true) {
+                    return {message: "Email is not confirmed yet.", code: "confirm_email", sub: this.id};
+                }
+                return null;
             }
         }
     });

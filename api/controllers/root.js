@@ -10,17 +10,38 @@ var jwt = require('express-jwt');
 //mine
 var config = require('../config');
 var logger = new winston.Logger(config.logger.winston);
-var jwt_helper = require('../jwt_helper');
-
+var common = require('../common');
 var db = require('../models');
 
 router.post('/refresh', jwt({secret: config.auth.public_key}), function(req, res, next) {
     db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
-        //return res.send(500, new Error("test"));
-        if (!user) return next(new Error("can't find user id:"+req.user.sub));
-        var claim = jwt_helper.createClaim(user);
-        var jwt = jwt_helper.signJwt(claim);
+        if(!user) return next("Couldn't find any user with sub:"+req.user.sub);
+        var err = user.check();
+        if(err) return next(err);
+        var claim = common.createClaim(user);
+        var jwt = common.signJwt(claim);
         return res.json({jwt: jwt});
+    });
+});
+
+router.post('/send_email_confirmation', function(req, res, next) {
+    db.User.findOne({where: {id: req.body.sub}}).then(function(user) {
+        if(!user) return next("Couldn't find any user with sub:"+req.body.sub);
+        if(!req.headers.referer) return next("referer not set.. can't send confirmation");
+        common.send_email_confirmation(req.headers.referer, user, function(err) {
+            if(err) return next(err);
+            res.json({message: 'Sent confirmation email with subject: '+config.email_confirmation.subject});
+        });
+    });
+});
+router.post('/confirm_email', function(req, res, next) {
+    db.User.findOne({where: {email_confirmation_token: req.body.token}}).then(function(user) {
+        if(!user) return next("Couldn't find any user with token:"+req.body.token);
+        if(user.email_confirmed) return next("Email already confirmed.");
+        user.email_confirmed = true;
+        user.save().then(function() {
+            res.json({message: "Email address confirmed! Please re-login."});
+        });
     });
 });
 
