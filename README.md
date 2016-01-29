@@ -29,12 +29,11 @@ Don't forward jwt to pages under domain that's not configured to do so (by defau
 
 iucas/register_newuser. If the uid is already registered, instead of veto-ing, forward user to a special login page and once logged in successfully, associate the IUCAS IU to the user account
 
-Email confirmation
-
 Make sure only root (or allowed group of users) can issue token via CLI
 
 Allow admin to reset password via administration/users pagee
 Allow user to reset his/her own password
+Allow admin to remove account (what should happend to profile and cached profile on other services?)
 Add event table logging all authentication related events (change password, etc..)
 
 Don't let user disconnect account if there is only 1 account left that's associated with it
