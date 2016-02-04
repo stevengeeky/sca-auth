@@ -51,7 +51,9 @@ router.get('/health', function(req, res) {
 
 //server side config need to render ui (public)
 router.get('/config', function(req, res) {
-    var c = {};
+    var c = {
+        allow_signup: config.auth.allow_signup,
+    };
     if(config.local) {
         c.local = {};
     }

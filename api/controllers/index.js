@@ -9,7 +9,10 @@ var jwt = require('express-jwt');
 var config = require('../config');
 
 router.use('/', require('./root'));
-router.use('/signup', require('./signup'));
+
+if(config.auth.allow_signup !== false) {
+    router.use('/signup', require('./signup'));
+}
 
 if(config.local) {
     router.use('/local', require('./local'));
