@@ -8,22 +8,24 @@ app.factory('serverconf', ['appconf', '$http', 'jwtHelper', function(appconf, $h
     });
 }]);
 
+/*
 app.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
     var jwt = localStorage.getItem(appconf.jwt_id);
     var user = jwtHelper.decodeToken(jwt);
     var pub = {fullname: null};
 
-    $http.get(appconf.profile_api+'/public/'+user.sub)
+    //$http.get(appconf.profile_api+'/public/'+user.sub)
+    $http.get(appconf.api+'/me/')
     .success(function(profile, status, headers, config) {
         for(var k in profile) {         
             pub[k] = profile[k]; 
         }
     });
-
     return {
         pub: pub,
     }
 }]);
+*/
 
 app.controller('HeaderController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'menu',
 function($scope, appconf, $route, toaster, $http, serverconf, menu) {
@@ -125,8 +127,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
             localStorage.setItem(appconf.jwt_id, res.data.jwt);
 
             //let's post public profile for the first time
-            $http.put(appconf.profile_api+'/public/'+res.data.sub, {
-                email: $scope.form.email,
+            $http.put(appconf.api+'/local/setprofile/'/*+res.data.sub*/, {
+                //email: $scope.form.email,
                 fullname: $scope.form.fullname,
             })
             .then(function(_res) {
@@ -176,8 +178,8 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
     if(!redirect) redirect = appconf.default_redirect_url;
 
     function put_profile(cb) {
-        $http.put(appconf.profile_api+'/public/'+user.sub, {
-            email: $scope.form.email,
+        $http.put(appconf.api+'/local/setprofile/'/*+user.sub*/, {
+            //email: $scope.form.email,
             fullname: $scope.form.fullname,
         }).then(function(res) {
             cb(res);
@@ -216,10 +218,10 @@ function($scope, appconf, $route, toaster, $http, jwtHelper, $routeParams, scaMe
     }
 }]);
 
-app.controller('AccountController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'jwtHelper', 'scaMessage', 'scaSettingsMenu',
-function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper, scaMessage, scaSettingsMenu) {
+app.controller('AccountController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'scaSettingsMenu',
+function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, scaSettingsMenu) {
     $scope.$parent.active_menu = 'user';
-    $scope.public_profile = profile.pub;
+    //$scope.public_profile = profile.pub;
     $scope.user = null;
     $scope.form_password = {};
     scaMessage.show(toaster);
@@ -234,8 +236,17 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
     serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
     $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
 
+    $scope.submit_profile = function() {
+        $http.put(appconf.api+'/local/setprofile', $scope.user)
+        .then(function(res, status, headers, config) {
+            toaster.success(res.data.message);
+            $http.get(appconf.api+'/me').success(function(info) { $scope.user = info; });
+        }, function(res, status, headers, config) {
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
+        });
+    }
     $scope.submit_password = function() {
-        //if($scope.form_password.new == $scope.form_password.new_confirm) {
         $http.put(appconf.api+'/local/setpass', {password_old: $scope.form_password.old, password: $scope.form_password.new})
         .then(function(res, status, headers, config) {
             toaster.success(res.data.message);
@@ -278,7 +289,6 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
             else toaster.error(res.statusText);
         }); 
     }
-
 }]);
 
 app.controller('ForgotpassController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'jwtHelper', '$routeParams', '$location', 'scaMessage', 
@@ -318,8 +328,8 @@ app.directive('passwordStrength', function() {
     };
 });
 
-app.controller('AdminUsersController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu',
-function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper, scaMessage, scaAdminMenu) {
+app.controller('AdminUsersController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu',
+function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, scaAdminMenu) {
     scaMessage.show(toaster);
     $scope.$parent.active_menu = 'admin';
     $scope.admin_menu = scaAdminMenu;
@@ -331,15 +341,15 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
         if(res.data && res.data.message) toaster.error(res.data.message);
         else toaster.error(res.statusText);
     });
-    $scope.edit = function(user) {
-        window.location = "#/admin/user/"+user.id;
+    $scope.edit = function(id) {
+        window.location = "#/admin/user/"+id;
     }
 }]);
 
-app.controller('AdminUserController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'profile', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu', '$routeParams', '$location',
-function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper, scaMessage, scaAdminMenu, $routeParams, $location) {
+app.controller('AdminUserController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu', '$routeParams', '$location',
+function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, scaAdminMenu, $routeParams, $location) {
     scaMessage.show(toaster);
-    $scope.$parent.active_menu = 'user';
+    $scope.$parent.active_menu = 'admin';
     $scope.admin_menu = scaAdminMenu;
     serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
 
@@ -368,13 +378,119 @@ function($scope, appconf, $route, toaster, $http, profile, serverconf, jwtHelper
     }
 }]);
 
+app.controller('GroupsController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'profiles',
+function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, profiles) {
+    scaMessage.show(toaster);
+    $scope.$parent.active_menu = 'groups';
+
+    profiles.then(function(_users) { 
+        $scope.users = _users;
+        $http.get(appconf.api+'/groups')
+        .then(function(res) { 
+            $scope.groups = res.data; 
+        }, function(res) {
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
+        });
+    });
+    //$scope.admin_menu = scaAdminMenu;
+    $scope.edit = function(id) {
+        window.location = "#/group/"+id;
+    }
+}]);
+
+app.controller('GroupController', ['$scope', 'appconf', '$route', 'toaster', '$http',  'serverconf', 'jwtHelper', 'scaMessage', '$routeParams', '$location', 'profiles',
+function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, $routeParams, $location, profiles) {
+    scaMessage.show(toaster);
+    $scope.$parent.active_menu = 'groups';
+    serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
+    var jwt = localStorage.getItem(appconf.jwt_id);
+    var user = jwtHelper.decodeToken(jwt);
+    $scope.group = {};
+
+    profiles.then(function(_users) { 
+        $scope.users = _users;
+        if($routeParams.id != 'new') {
+            load_group($routeParams.id);
+        } else {
+            //add the user as first admin
+            _users.forEach(function(_user) {
+                if(_user.id == user.sub) {
+                    $scope.admins = [_user];
+                } 
+            });
+        }
+    });
+
+    function load_group(id) {
+        $http.get(appconf.api+'/group/'+id)
+        .then(function(res) { 
+            $scope.group = res.data; 
+
+            $scope.admins = [];
+            $scope.group.Admins.forEach(function(admin) {
+                $scope.users.forEach(function(user) {
+                    if(admin.id == user.id) $scope.admins.push(user);
+                });
+            });
+ 
+            $scope.members = [];
+            $scope.group.Members.forEach(function(member) {
+                $scope.users.forEach(function(user) {
+                    if(member.id == user.id) $scope.members.push(user);
+                });
+            });
+        }, function(res) {
+            if(res.data && res.data.message) toaster.error(res.data.message);
+            else toaster.error(res.statusText);
+        });
+    }
+
+    $scope.submit = function() {
+        var admins = [];
+        $scope.admins.forEach(function(admin) {
+            admins.push(admin.id);
+        });
+        var members = [];
+        $scope.members.forEach(function(member) {
+            members.push(member.id);
+        });
+        var body = {
+            group: $scope.group,
+            admins: admins,
+            members: members,
+        }
+        if($routeParams.id == "new") {
+            //new
+            $http.post(appconf.api+'/group', body)
+            .then(function(res) { 
+                window.location = "#/groups"
+                toaster.success(res.data.message);
+            }, function(res) {
+                if(res.data && res.data.message) toaster.error(res.data.message);
+                else toaster.error(res.statusText);
+            });
+        } else {
+            //update
+            $http.put(appconf.api+'/group/'+$routeParams.id, body)
+            .then(function(res) { 
+                window.location = "#/groups"
+                toaster.success(res.data.message);
+            }, function(res) {
+                if(res.data && res.data.message) toaster.error(res.data.message);
+                else toaster.error(res.statusText);
+            });
+        }
+    }
+    $scope.cancel = function() {
+        window.location = "#/groups";
+    }
+}]);
+
 app.controller('SendEmailConfirmationController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu', '$routeParams', '$location',
 function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMessage, scaAdminMenu, $routeParams, $location) {
     scaMessage.show(toaster);
     $scope.$parent.active_menu = 'user';
-    //$scope.admin_menu = scaAdminMenu;
-    //serverconf.then(function(_serverconf) { $scope.serverconf = _serverconf; });
-
 }]);
 
 app.controller('ConfirmEmailController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'jwtHelper', 'scaMessage', 'scaAdminMenu', '$routeParams', '$location',

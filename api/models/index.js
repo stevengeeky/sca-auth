@@ -1,12 +1,17 @@
 'use strict';
 
+//node
 var fs        = require('fs');
 var path      = require('path');
+
+//contrib
 var Sequelize = require('sequelize');
-var basename  = path.basename(module.filename);
-//var env       = process.env.NODE_ENV || 'development';
-//var db        = {};
+
+//mine
 var config    = require('../config');
+
+var basename  = path.basename(module.filename);
+
 if(typeof config.db === 'string') {
     var sequelize = new Sequelize(config.db, {
         /*
@@ -33,6 +38,7 @@ fs
     db[model.name] = model;
   });
 
+//I am not sure what this is for, but it's from the sequelize doc
 Object.keys(db).forEach(function(modelName) {
   if (db[modelName].associate) {
     db[modelName].associate(db);
@@ -41,5 +47,11 @@ Object.keys(db).forEach(function(modelName) {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
+//relationships
+db.User.belongsToMany(db.Group, {through: 'GroupAdmins'});
+db.Group.belongsToMany(db.User, {as: 'Admins', through: 'GroupAdmins'});
+db.User.belongsToMany(db.Group, {through: 'GroupMembers'});
+db.Group.belongsToMany(db.User, {as: 'Members', through: 'GroupMembers'});
 
 module.exports = db;

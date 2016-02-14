@@ -19,7 +19,7 @@ function finduserByiucasid(id, cb) {
     });
 }
 
-function associate(jwt, uid, res) {
+function associate(jwt, uid, res, cb) {
     logger.info("associating user with iucas id:"+uid);
     db.User.findOne({where: {id: jwt.sub}}).then(function(user) {
         if(!user) throw new Error("couldn't find user record with uid:"+uid);
@@ -27,9 +27,9 @@ function associate(jwt, uid, res) {
         user.save().then(function() {
             var messages = [{type: "success", /*title: "IUCAS ID Associated",*/ message: "We have associated IU ID:"+uid+" to your account"}];
             res.cookie('messages', JSON.stringify(messages), {path: '/'});
-            //return res.json({status: "ok"}); //probably ignored.. but
-            issue_jwt(user, function(jwt) {
-                res.json({jwt:jwt});
+            issue_jwt(user, function(err, jwt) {
+                if(err) return cb(err);
+                cb(null, jwt);
             });
         });
     });
@@ -54,7 +54,8 @@ function register_newuser(uid, res, next) {
                 iucas: uid,
                 scopes: config.auth.default_scopes
             }).then(function(user) {
-                issue_jwt(user, function(jwt) {
+                issue_jwt(user, function(err, jwt) {
+                    if(err) return next(err);
                     res.json({jwt:jwt, registered: true});
                 });
             });
@@ -65,13 +66,11 @@ function register_newuser(uid, res, next) {
 function issue_jwt(user, cb) {
     user.updateTime('iucas_login');
     user.save().then(function() {
-        var claim = common.createClaim(user);
-        var jwt = common.signJwt(claim);
-        cb(jwt);
-        /*
-        var need_profile = (!user.password_hash);
-        return res.json({jwt:jwt, need_profile: need_profile});
-        */
+        common.createClaim(user, function(err, claim) {
+            if(err) return cb(err);
+            var jwt = common.signJwt(claim);
+            cb(null, jwt);
+        });
     });
 }
 
@@ -82,8 +81,6 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
     //var casurl = config.iucas.home_url;
     if(!req.headers.referer) return next("Referer not set in header..");
     casurl = req.headers.referer;
-    
-    //logger.debug("validating cas ticket:"+ticket+" casurl:"+casurl);
     request('https://cas.iu.edu/cas/validate?cassvc=IU&casticket='+ticket+'&casurl='+casurl, function (err, response, body) {
         if(err) return next(err);
         if (response.statusCode == 200) {
@@ -100,7 +97,9 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
                             //visiting /auth page when the first user is already logged into a system is very unlikely, since the user most likely will
                             //sign out so that second user can login. also, if this situation to ever occur, user should be presented with 
                             //"we have associated your account" message so that first user should be aware of this happening
-                            associate(req.user, uid, res);
+                            associate(req.user, uid, res, function(err, jwt) {
+                                res.json({jwt: jwt});
+                            });
                         } else {
                             register_newuser(uid, res, next);
                         }
@@ -110,7 +109,8 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
                         
                         //all good. issue token
                         logger.debug("iucas authentication successful. iu id:"+uid);
-                        issue_jwt(user, function(jwt) {
+                        issue_jwt(user, function(err, jwt) {
+                            if(err) return next(err);
                             res.json({jwt:jwt});
                         });
                     }

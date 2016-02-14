@@ -18,9 +18,11 @@ router.post('/refresh', jwt({secret: config.auth.public_key}), function(req, res
         if(!user) return next("Couldn't find any user with sub:"+req.user.sub);
         var err = user.check();
         if(err) return next(err);
-        var claim = common.createClaim(user);
-        var jwt = common.signJwt(claim);
-        return res.json({jwt: jwt});
+        common.createClaim(user, function(err, claim){
+            if(err) return next(err);
+            var jwt = common.signJwt(claim);
+            return res.json({jwt: jwt});
+        });
     });
 });
 
@@ -78,7 +80,7 @@ router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
     db.User.findOne({
         where: {id: req.user.sub},
         //password_hash is replace by true/false right below
-        attributes: ['username', 'email', 'email_confirmed', 'iucas', 'googleid', 'gitid', 'x509dns', 'times', 'password_hash'],
+        attributes: ['username', 'fullname', 'email', 'email_confirmed', 'iucas', 'googleid', 'gitid', 'x509dns', 'times', 'password_hash'],
     }).then(function(user) {
         if(!user) return res.status(404).end();
         if(user.password_hash) user.password_hash = true;
@@ -86,13 +88,13 @@ router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
     });
 });
 
-//return list of all users (minus password)
+//return list of all users (minus password) admin only - used by user admin
 router.get('/users', jwt({secret: config.auth.public_key}), function(req, res) {
     if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
     db.User.findAll({
         //password_hash is replace by true/false right below
         attributes: [
-            'id', 'username', 'password_hash', 
+            'id', 'username', 'fullname', 'password_hash', 
             'email', 'email_confirmed', 'iucas', 'googleid', 'gitid', 'x509dns', 
             'times', 'scopes', 'active'],
     }).then(function(users) {
@@ -103,28 +105,120 @@ router.get('/users', jwt({secret: config.auth.public_key}), function(req, res) {
     });
 });
 
-//return detail from just one user (somewhat redundant from /users ??)
+//return detail from just one user - admin only (somewhat redundant from /users ??)
 router.get('/user/:id', jwt({secret: config.auth.public_key}), function(req, res) {
     if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
     db.User.findOne({
         where: {id: req.params.id},
         attributes: [
-            'id', 'username', 
+            'id', 'username', 'fullname',
             'email', 'email_confirmed', 'iucas', 'googleid', 'gitid', 'x509dns', 
             'times', 'scopes', 'active'],
     }).then(function(user) {
         res.json(user);
     });
 });
+
+//update user info (admin only)
 router.put('/user/:id', jwt({secret: config.auth.public_key}), function(req, res, next) {
     if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
-    db.User.findOne({where: {id: req.body.id}}).then(function(user) {
-        if (!user) return next(new Error("can't find user id:"+req.body.id));
+    db.User.findOne({where: {id: req.params.id}}).then(function(user) {
+        if (!user) return next("can't find user id:"+req.params.id);
         user.update(req.body).then(function(err) {
             res.json({message: "User updated successfully"});
         });
     });
 });
 
+//return list of all groups (open to all users)
+router.get('/groups', jwt({secret: config.auth.public_key}), function(req, res) {
+    //if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
+    db.Group.findAll({
+        include: [
+            {model: db.User, as: 'Admins', attributes: ['id', 'email', 'fullname']},
+            {model: db.User, as: 'Members', attributes: ['id', 'email', 'fullname']},
+        ],
+        //raw: true,
+    }).then(function(_groups) {
+        var groups = JSON.parse(JSON.stringify(_groups));
+        groups.forEach(function(group) {
+            group.canedit = ~req.user.scopes.sca.indexOf("admin");
+            group.Admins.forEach(function(admin) {
+                if(admin.id == req.user.sub) {
+                    group.canedit = true;
+                }
+            }); 
+        });
+        res.json(groups);
+    });
+});
+
+//update group (sca adimn, or admin of the group can update)
+router.put('/group/:id', jwt({secret: config.auth.public_key}), function(req, res, next) {
+    //console.dir(req.body);
+    db.Group.findOne({where: {id: req.params.id}}).then(function(group) {
+        if (!group) return next("can't find group id:"+req.params.id);
+        //first I need to get current admins..
+        group.getAdmins().then(function(admins) {
+            //console.log(req.user.scopes.sca.indexOf("admin"));
+            var admin_ids = [];
+            admins.forEach(function(admin) {
+                admin_ids.push(admin.id.toString()); //toString so that I can compare with indexOf
+            });
+            //console.dir(req.user.sub);
+            //console.dir(admin_ids);
+            //console.log(admin_ids.indexOf(req.user.sub));
+            if(!~req.user.scopes.sca.indexOf("admin") && !~admin_ids.indexOf(req.user.sub)) return res.send(401);
+            //then update everything
+            group.update(req.body.group).then(function(err) {
+                group.setAdmins(req.body.admins).then(function() {
+                    group.setMembers(req.body.members).then(function() {
+                        res.json({message: "Group updated successfully"});
+                    });
+                });
+            }).catch(function(err) {
+                next(err);
+            });
+        });
+    });
+});
+
+//create new group (any user can create group?)
+router.post('/group', jwt({secret: config.auth.public_key}), function(req, res, next) {
+    //if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
+    var group = db.Group.build(req.body.group);
+    group.save().then(function() {
+        group.setAdmins(req.body.admins).then(function() {
+            group.setMembers(req.body.members).then(function() {
+                res.json({message: "Group created", group: group});
+            });
+        });
+    }).catch(function(err) {
+        next(err);
+    });
+});
+
+//return detail from just one group (open to all users)
+router.get('/group/:id', jwt({secret: config.auth.public_key}), function(req, res) {
+    //if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
+    db.Group.findOne({
+        where: {id: req.params.id},
+        include: [
+            {model: db.User, as: 'Admins', attributes: ['id', 'email', 'fullname']},
+            {model: db.User, as: 'Members', attributes: ['id', 'email', 'fullname']},
+        ]
+    }).then(function(group) {
+        res.json(group);
+    });
+});
+
+//return all profiles (open to all users)
+router.get('/profiles', jwt({secret: config.auth.public_key}), function(req, res) {
+    db.User.findAll({
+        attributes: [ 'id', 'fullname', 'email', 'active']
+    }).then(function(profiles) {
+        res.json(profiles);
+    });
+});
 
 module.exports = router;

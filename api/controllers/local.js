@@ -42,11 +42,13 @@ router.post('/auth', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
         if (err) return next(err);
         if (!user) return next(info);
-        var claim = common.createClaim(user);
-        var jwt = common.signJwt(claim);
-        user.updateTime('local_login');
-        user.save().then(function() {
-            res.json({message: "Login Success!", jwt: jwt});
+        common.createClaim(user, function(err, claim) {
+            if(err) return next(err);
+            var jwt = common.signJwt(claim);
+            user.updateTime('local_login');
+            user.save().then(function() {
+                res.json({message: "Login Success!", jwt: jwt});
+            });
         });
     })(req, res, next);
 });
@@ -74,6 +76,15 @@ router.put('/setpass', jwt({secret: config.auth.public_key}), function(req, res,
             logger.info("failed to find user with sub:"+req.user.sub);
             res.status(404).end();
         }
+    });
+});
+
+router.put('/setprofile', jwt({secret: config.auth.public_key}), function(req, res, next) {
+    db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
+        user.fullname = req.body.fullname;
+        user.save().then(function() {
+            res.json({status: "ok", message: "Profile updated successfully."});
+        });
     });
 });
 

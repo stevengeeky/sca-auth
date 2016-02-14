@@ -10,6 +10,8 @@ var app = angular.module('app', [
     'angular-jwt',
     'ui.bootstrap',
     'sca-shared',
+    'ui.select',
+    'ui.gravatar'
 ]);
 
 //http://wijmo.com/easy-form-validation-in-angularjs/
@@ -53,28 +55,15 @@ app.directive('validjson', function () {
   };
 });
 
-
-/*
-app.config(['appconf', '$httpProvider', 'jwtInterceptorProvider', function(appconf, $httpProvider, jwtInterceptorProvider) {
-    jwtInterceptorProvider.tokenGetter = [function(myService) {
-        //console.dir(localStorage.getItem(appconf.jwt_token_id));
-        return localStorage.getItem(appconf.jwt_token_id);
-    }];
-    $httpProvider.interceptors.push('jwtInterceptor');
+app.factory('profiles', ['appconf', '$http', 'jwtHelper', 'toaster', function(appconf, $http, jwtHelper, toaster) {
+    return $http.get(appconf.api+'/profiles')
+    .then(function(res) {
+        return res.data;
+    }, function(res) {
+        if(res.data && res.data.message) toaster.error(res.data.message);
+        else toaster.error(res.statusText);
+    });
 }]);
-*/
-/*
-app.factory('jwt', ['appconf', '$cookies', 'jwtHelper', function(appconf, $cookies, jwtHelper) {
-    var jwt_cookie = $cookies.get('jwt');
-    if(jwt_cookie) {
-        var jwt = jwtHelper.decodeToken(jwt_cookie);
-        return jwt;
-    } else {
-        //not authenticated
-        return null;
-    }
-}]);
-*/
 
 /*replaced by scaRedirector
 //redirecto to whevever user needs to go after auccessful login
@@ -202,6 +191,16 @@ app.config(['$routeProvider', 'appconf', function($routeProvider, appconf) {
         controller: 'AdminUserController',
         requiresLogin: true
     })
+    .when('/groups', {
+        templateUrl: 't/groups.html',
+        controller: 'GroupsController',
+        requiresLogin: true
+    })
+    .when('/group/:id', {
+        templateUrl: 't/group.html',
+        controller: 'GroupController',
+        requiresLogin: true
+    })
     .when('/inactive', {
         templateUrl: 't/inactive.html',
         //controller: 'AdminUserController',
@@ -288,7 +287,9 @@ function(appconf, $http, jwtHelper, $sce, scaMessage, scaMenu, toaster) {
     }
 
     if(menu.user) {
-        $http.get(appconf.profile_api+'/public/'+menu.user.sub).then(function(res) {
+        //$http.get(appconf.profile_api+'/public/'+menu.user.sub).then(function(res) {
+        $http.get(appconf.api+'/me/').then(function(res) {
+            //console.dir(res.data);
             menu._profile = res.data;
         });
     }
@@ -303,3 +304,49 @@ app.filter('pullcn', function() {
     };
 });
 */
+
+//http://plnkr.co/edit/juqoNOt1z1Gb349XabQ2?p=preview
+/**
+ * AngularJS default filter with the following expression:
+ * "person in people | filter: {name: $select.search, age: $select.search}"
+ * performs a AND between 'name: $select.search' and 'age: $select.search'.
+ * We want to perform a OR.
+ */
+app.filter('propsFilter', function() {
+  return function(items, props) {
+    var out = [];
+
+    if (angular.isArray(items)) {
+      items.forEach(function(item) {
+        var itemMatches = false;
+
+        var keys = Object.keys(props);
+        for (var i = 0; i < keys.length; i++) {
+          var prop = keys[i];
+          var text = props[prop].toLowerCase();
+          if (item[prop].toString().toLowerCase().indexOf(text) !== -1) {
+            itemMatches = true;
+            break;
+          }
+        }
+
+        if (itemMatches) {
+          out.push(item);
+        }
+      });
+    } else {
+      // Let the output be the input untouched
+      out = items;
+    }
+
+    return out;
+  };
+});
+
+app.directive('userlist', function() {
+    return {
+        scope: { users: '=', },
+        templateUrl: 't/userlist.html',
+    }
+});
+

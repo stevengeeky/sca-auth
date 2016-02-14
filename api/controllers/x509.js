@@ -20,60 +20,14 @@ function finduserByDN(dn, done) {
     });
 }
 
-/*
-function associate(jwt, dn, res) {
-    logger.info("associating user with x509 DN "+dn);
-    db.User.findOne({where: {id: jwt.sub}}).then(function(user) {
-        if(!user) throw new Error("couldn't find user record with jwt.sub:"+jwt.sub);
-        var dns = user.get('x509dns');
-        if(!~dns.indexOf(dn)) dns.push(dn);
-        user.set('x509dns', dns);
-        user.save().then(function() {
-            res.json({status: "ok", message: "Successfully associated x509D DN:"+dn+" to your account", user: user}); 
-        });
-    });
-}
-*/
-
-/*
-function register_newuser(dn, uid, res, next) {
-    logger.info("registering new user with DN:"+dn);
-    db.User.findOne({where: {'username': uid}}).then(function(user) {
-        if(user) {
-            logger.warn("username already registered:"+uid+"(can't auto register)");
-            //TODO - instead of showing this error message, maybe I should redirect user to
-            //a page to force user to login via user/pass, then associate the IU CAS IU once user logs in 
-            next({message: 
-                "This is the first time you login with IU CAS account, "+
-                "but we couldn't register this account since the username '"+uid+"' is already registered in our system. "+
-                "If you have already registered with username / password, please login with username / password first, "
-            });
-        } else {
-            //brand new user - go ahead and create a new account using IU id as sca user id
-            db.User.create({
-                username: uid, //let's use IU id as local username
-                email: uid+"@iu.edu", 
-                email_confirmed: true, //let's trust IU id
-                iucas: uid,
-                scopes: config.auth.default_scopes
-            }).then(function(user) {
-                issue_jwt(user, dn, res);
-            });
-        }
-    });
-}
-*/
-
 function issue_jwt(user, dn, cb) {
     user.updateTime('x509_login:'+dn);
     user.save().then(function() {
-        var claim = common.createClaim(user);
-        var jwt = common.signJwt(claim);
-        cb(jwt);
-        /*
-        var need_setpass = (!user.password_hash);
-        return res.json({jwt:jwt, need_setpass: need_setpass});
-        */
+        var claim = common.createClaim(user, function(err, claim) {
+            if(err) return cb(err);
+            var jwt = common.signJwt(claim);
+            cb(null, jwt);
+        });
     });
 }
 
@@ -105,7 +59,8 @@ router.get('/auth', /*jwt({secret: config.auth.public_key, credentialsRequired: 
         
         //all good. issue token
         logger.debug("x509 authentication successful with "+dn);
-        issue_jwt(user, dn, function(jwt) {
+        issue_jwt(user, dn, function(err, jwt) {
+            if(err) return next(err);
             res.json({jwt:jwt});
         });
     });

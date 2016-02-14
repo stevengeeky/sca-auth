@@ -16,6 +16,10 @@ module.exports = function(sequelize, DataTypes) {
         ///////////////////////////////////////////////////////////////////////////////////////////
         //always filled
         username: Sequelize.STRING,
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        //auth profile
+        fullname: Sequelize.STRING,
         email: Sequelize.STRING,  //profile email is stored in profile service db
         email_confirmed: { type: Sequelize.BOOLEAN, defaultValue: false }, //TODO
         email_confirmation_token: Sequelize.STRING,
@@ -30,6 +34,8 @@ module.exports = function(sequelize, DataTypes) {
         iucas: Sequelize.STRING,
         googleid: Sequelize.STRING,
         gitid: Sequelize.STRING,
+        x509dns: JsonField(sequelize, 'User', 'x509dns'),
+        /*
         x509dns: { //array of DNs
             type: Sequelize.TEXT,
             defaultValue: '[]',
@@ -42,6 +48,7 @@ module.exports = function(sequelize, DataTypes) {
                 return this.setDataValue('x509dns', JSON.stringify(admins));
             }
         },
+        */
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         //

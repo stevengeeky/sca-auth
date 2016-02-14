@@ -28,7 +28,7 @@ angular.module('app.config', [])
     shared_api: '../api/shared',
     shared_url: '../shared',
 
-    profile_api: '../api/profile',
+    //profile_api: '../api/profile',
 
     //default location to redirect after successful login
     default_redirect_url: '../profile', 

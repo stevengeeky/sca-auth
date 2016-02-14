@@ -53,6 +53,18 @@ var migrations = [
             next();
         });
     },
+    function(qi, next) {
+        logger.info("adding fullname");
+        qi.addColumn('Users', 'fullname', {type: Sequelize.STRING}).then(function() {
+            next();
+        });
+    },
+    function(qi, next) {
+        logger.info("adding group desc");
+        qi.addColumn('Groups', 'desc', {type: Sequelize.TEXT}).then(function() {
+            next();
+        });
+    },
 ];
 
 exports.run = function() {
