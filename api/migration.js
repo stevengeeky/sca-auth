@@ -84,14 +84,18 @@ exports.run = function() {
                 async.eachSeries(ms, function(m, next) {
                     m(qi, function(err) {
                         if(err) return next(err);
-                        info.version++;
+                        info.increment(version);
                         next();
                     }); 
                 }, function(err) {
+                    if(err) reject(err);
+                    else resolve("migration complete");
+                    /*
                     info.save().then(function() {
                         if(err) reject(err);
                         else resolve("migration complete");
                     });
+                    */
                 });
             }
         });
