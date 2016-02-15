@@ -59,12 +59,14 @@ var migrations = [
             next();
         });
     },
+    /*
     function(qi, next) {
         logger.info("adding group desc");
         qi.addColumn('Groups', 'desc', {type: Sequelize.TEXT}).then(function() {
             next();
         });
     },
+    */
 ];
 
 exports.run = function() {
