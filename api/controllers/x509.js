@@ -81,6 +81,7 @@ router.get('/connect', jwt({secret: config.auth.public_key}), function(req, res,
             db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
                 if(!user) return next("couldn't find user record with jwt.sub:"+req.user.sub);
                 var dns = user.get('x509dns');
+                if(!dns) dns = [];
                 if(!~dns.indexOf(dn)) dns.push(dn);
                 user.set('x509dns', dns);
                 user.save().then(function() {

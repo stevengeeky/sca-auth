@@ -5,11 +5,6 @@
 //
 // Update specified user's scope 
 //
-// Usage: 
-// ./auth.js modscope --username hayashis --set '{common: ["user", "admin"]}'
-// ./auth.js modscope --username hayashis --add '{common: ["user", "admin"]}'
-// ./auth.js modscope --username hayashis --del '{common: ["user", "admin"]}'
-//
 
 //contrib
 var argv = require('optimist').argv;
@@ -27,8 +22,9 @@ switch(argv._[0]) {
 case "modscope": modscope(); break;
 case "listuser": listuser(); break;
 case "issue": issue(); break;
+case "setpass": setpass(); break;
 default:
-    logger.error("unknown command "+argv[1]); 
+    console.log(fs.readFileSync(__dirname+"/usage.txt", {encoding: "utf8"})); 
 }
 
 function listuser() {
@@ -119,9 +115,6 @@ function modscope() {
     db.User.findOne({where: {"username": argv.username}})
     .then(function(user) {
         if(!user) return logger.error("can't find user:"+argv.username);
-        return user;
-    })
-    .then(function(user) {
         //logger.debug("before");
         //logger.debug(JSON.stringify(user, null, 4));
         if(argv.set) {
@@ -139,5 +132,29 @@ function modscope() {
         }).catch(function(err) {
             logger.error(err);
         });
-    });
+    })
+}
+
+function setpass() {
+    if(!argv.username) {
+        logger.error("please specify --username <username>");
+        process.exit(1);
+    }
+    if(!argv.password) {
+        logger.error("please specify --password <password>");
+        process.exit(1);
+    }
+
+    db.User.findOne({where: {"username": argv.username}})
+    .then(function(user) {
+        if(!user) return logger.error("can't find user:"+argv.username);
+        user.setPassword(argv.password, function(err) {
+            if(err) throw err;
+            user.save().then(function() {
+                logger.log("updated password");
+            }).catch(function(err) {
+                logger.error(err);
+            });
+        });
+    })
 }

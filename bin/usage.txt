@@ -1,0 +1,16 @@
+Usage: 
+
+* List Users
+./auth.js listuser 
+
+* Issue new JWT token
+./auth.js issue --scopes '{ "sca": ["user"] }' --sub 'test_service' #--out test.jwt
+
+* Reset password
+./auth.js setpass --username hayashis --password password#123
+
+* Modify (set/add/del) user scopes
+./auth.js modscope --username hayashis --set '{common: ["user", "admin"]}'
+./auth.js modscope --username hayashis --add '{common: ["user", "admin"]}'
+./auth.js modscope --username hayashis --del '{common: ["user", "admin"]}'
+
