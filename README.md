@@ -37,3 +37,5 @@ Allow admin to remove account (what should happend to profile and cached profile
 Add event table logging all authentication related events (change password, etc..)
 
 Don't let user disconnect account if there is only 1 account left that's associated with it
+
+Implement password locking mechanism after repeated failed attempt (not necessary because we delay failed password re-try?)

@@ -127,7 +127,7 @@ function modscope() {
             user.scopes = del(_.clone(user.scopes), JSON.parse(argv.del));
         }
         user.save().then(function() {
-            //logger.info("after (user needs to re-signin for this to take an effect)");
+            logger.info("successfully updated user scope. user must re-login for it to take effect)");
             //logger.debug(JSON.stringify(user, null, 4));
         }).catch(function(err) {
             logger.error(err);
@@ -151,7 +151,7 @@ function setpass() {
         user.setPassword(argv.password, function(err) {
             if(err) throw err;
             user.save().then(function() {
-                logger.log("updated password");
+                logger.log("successfully updated password");
             }).catch(function(err) {
                 logger.error(err);
             });

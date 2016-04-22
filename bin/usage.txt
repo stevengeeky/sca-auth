@@ -10,7 +10,7 @@ Usage:
 ./auth.js setpass --username hayashis --password password#123
 
 * Modify (set/add/del) user scopes
-./auth.js modscope --username hayashis --set '{common: ["user", "admin"]}'
-./auth.js modscope --username hayashis --add '{common: ["user", "admin"]}'
-./auth.js modscope --username hayashis --del '{common: ["user", "admin"]}'
+./auth.js modscope --username hayashis --set '{"common": ["user", "admin"]}'
+./auth.js modscope --username hayashis --add '{"common": ["user", "admin"]}'
+./auth.js modscope --username hayashis --del '{"common": ["user", "admin"]}'
 
