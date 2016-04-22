@@ -163,10 +163,11 @@ router.put('/group/:id', jwt({secret: config.auth.public_key}), function(req, re
             //console.log(req.user.scopes.sca.indexOf("admin"));
             var admin_ids = [];
             admins.forEach(function(admin) {
-                admin_ids.push(admin.id.toString()); //toString so that I can compare with indexOf
+                admin_ids.push(admin.id); //toString so that I can compare with indexOf
             });
             //console.dir(req.user.sub);
             //console.dir(admin_ids);
+            //console.log(req.user.sub);
             //console.log(admin_ids.indexOf(req.user.sub));
             if(!~req.user.scopes.sca.indexOf("admin") && !~admin_ids.indexOf(req.user.sub)) return res.send(401);
             //then update everything
