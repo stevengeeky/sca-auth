@@ -20,7 +20,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">Admins</label>
             <div class="col-sm-10">
-                <ui-select multiple ng-model="$parent.admins">
+                <ui-select multiple ng-model="$parent.admins" required>
                     <ui-select-match placeholder="Select admins who can update this group">
                         <img gravatar-src="$item.email" gravatar-size="17"/>
                         <b>{{$item.fullname}}</b> <span class="email">&lt;{{$item.email}}&gt;</span>
@@ -35,7 +35,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">Members</label>
             <div class="col-sm-10">
-                <ui-select multiple ng-model="$parent.members">
+                <ui-select multiple ng-model="$parent.members" required>
                     <ui-select-match placeholder="Select members of this group">
                         <img gravatar-src="$item.email" gravatar-size="17"/>
                         <b>{{$item.fullname}}</b> <span class="email">&lt;{{$item.email}}&gt;</span>

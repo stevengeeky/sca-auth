@@ -407,6 +407,8 @@ function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMess
     var jwt = localStorage.getItem(appconf.jwt_id);
     var user = jwtHelper.decodeToken(jwt);
     $scope.group = {};
+    $scope.admins = [];
+    $scope.members = [];
 
     profiles.then(function(_users) { 
         $scope.users = _users;
@@ -416,7 +418,7 @@ function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMess
             //add the user as first admin
             _users.forEach(function(_user) {
                 if(_user.id == user.sub) {
-                    $scope.admins = [_user];
+                    $scope.admins.push(_user);
                 } 
             });
         }
@@ -460,6 +462,13 @@ function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMess
             admins: admins,
             members: members,
         }
+
+        //ui-select require doesn't work so I need to have this
+        if(admins.length == 0) {
+            toaster.error("Please specify at least 1 admin");
+            return; 
+        }
+
         if($routeParams.id == "new") {
             //new
             $http.post(appconf.api+'/group', body)
