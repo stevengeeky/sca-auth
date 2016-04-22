@@ -84,7 +84,7 @@ exports.run = function() {
                 async.eachSeries(ms, function(m, next) {
                     m(qi, function(err) {
                         if(err) return next(err);
-                        info.increment(version);
+                        info.increment('version');
                         next();
                     }); 
                 }, function(err) {
