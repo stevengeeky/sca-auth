@@ -6,6 +6,7 @@ var assert = require('assert');
 //mine
 var config = require('../api/config');
 
+//use temporary db for test..
 config.db.storage = "/tmp/test.sqlite";
 
 var db = require('../api/models');

@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "main": "api/auth.js",
   "scripts": {
-    "test": "mocha --reporter spec"
+    "test": "./test/install.sh && mocha --reporter spec"
   },
   "dependencies": {
     "async": "^1.5.0",

@@ -1,7 +1,8 @@
 **/barn
 ui/bower_components
 node_modules
-api/config
+api/config/auth.*
+api/config/index.js
 ui/config.js
 nohup*.out
 **/*.log
