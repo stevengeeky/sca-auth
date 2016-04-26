@@ -12,10 +12,13 @@ config.db.storage = "/tmp/test.sqlite";
 var db = require('../api/models');
 var app = require('../api/server').app;
 
-before(function() {
+before(function(done) {
     console.log("synching sequelize");
     this.timeout(4000);
-    db.sequelize.sync({force: true});
+    db.sequelize.sync({force: true}).then(function() {
+        console.log("synchronized");
+        done();
+    });
 });
 
 describe('GET /health', function() {
