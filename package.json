@@ -4,7 +4,7 @@
   "main": "api/auth.js",
   "private": true,
   "scripts": {
-    "test": "DEBUG=auth:* mocha"
+    "test": "mocha --reporter spec"
   },
   "dependencies": {
     "async": "^1.5.0",
