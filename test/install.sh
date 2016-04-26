@@ -1,3 +1,5 @@
+#script used by travis to setup testing environment
+#invoked via .travis.yml
 
 mkdir -p api/config
 
