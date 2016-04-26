@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/soichih/sca-auth.svg?branch=master)](https://travis-ci.org/soichih/sca-auth)
+
 SCA authentication module reponsible performing user authentication and token generation.
 
 All components who uses this auth module will need public key from this authentication module (via api or config?)
