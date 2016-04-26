@@ -4,15 +4,101 @@ var request = require('supertest')
 var assert = require('assert');
 
 //mine
-var config = require('../config');
-var db = require('../models');
-var app = require('../server').app;
+var config = require('../api/config');
 
+config.db.storage = "/tmp/test.sqlite";
+
+var db = require('../api/models');
+var app = require('../api/server').app;
+
+before(function() {
+    console.log("synching sequelize");
+    this.timeout(4000);
+    db.sequelize.sync({force: true});
+});
+
+describe('GET /health', function() {
+    it('return 200', function(done) {
+        request(app)
+        .get('/health')
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/) 
+        .expect(200, done);
+    });
+});
+
+describe('GET /config', function() {
+    it('return 200', function(done) {
+        request(app)
+        .get('/config')
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/) 
+        /*
+        .expect(function(res) {
+            res.allow_signup = true;
+        })
+        */
+        /*
+        .expect(200, {
+            allow_signup: true
+        }, done);
+        */
+        .end(done)
+    });
+});
+
+describe('/local', function() {
+    describe("create user", function() {
+        it('should create user', function(done) {
+            var user = db.User.build({
+                username: 'test',
+                fullname: 'test user',
+                email: 'test@example.com',
+                scopes: config.auth.default_scopes,
+            });
+            user.email_confirmation_token = "abc123";
+            //console.dir(user);
+            user.setPassword('testpass', function(err) {
+                //console.log("set password");
+                if(err) throw err;
+                user.save().then(function(_user) {
+                    done();
+                });
+            });
+        });
+    });
+    describe("/confirming_email", function() {
+        it('should confirm', function(done) {
+            request(app)
+            .post('/confirm_email')
+            .send({token: "abc123"})  
+            .expect(200, done)
+        });
+    });
+
+    describe('/local/auth', function() {
+        it('returns valid token', function(done) {
+            request(app)
+            .post('/local/auth')
+            .send({username: 'test', password: 'testpass'})
+            .expect(200)
+            .end(function(err, res) {
+                if(err) return done(err);
+                console.dir(res.body);
+                done();
+            });
+        });
+    });
+});
+
+
+/*
 process.env.DEBUG="*";
 
 before(function(done) {
     done();
 });
+*/
 
 /*
 describe('/query', function() {
@@ -109,7 +195,11 @@ describe('etl', function(){
 });
 */
 
+/*
 after(function(done) {
     mongoose.disconnect(done);
 });
+
+*/
+
 

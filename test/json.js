@@ -1,3 +1,4 @@
+/*
 var Sequelize = require('sequelize'),
     mocha     = require('mocha'),
     expect    = require('chai').expect,
@@ -142,3 +143,4 @@ describe('Test the various uses of the JSON field', function() {
   });
 
 });
+*/
