@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/soichih/sca-auth.svg?branch=master)](https://travis-ci.org/soichih/sca-auth)
+[![Coverage Status](https://coveralls.io/repos/github/soichih/sca-auth/badge.svg?branch=master)](https://coveralls.io/github/soichih/sca-auth?branch=master)
 
 SCA authentication module reponsible performing user authentication and token generation.
 
