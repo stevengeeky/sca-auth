@@ -3,7 +3,8 @@
   "version": "0.0.2",
   "main": "api/auth.js",
   "scripts": {
-    "test": "./test/install.sh && mocha --reporter spec"
+    "test": "./test/install.sh && mocha --reporter spec",
+    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js"
   },
   "dependencies": {
     "async": "^1.5.0",
@@ -41,9 +42,11 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coveralls": "^2.11.9",
     "grunt": "^0.4.5",
     "grunt-contrib-less": "^1.0.1",
     "grunt-contrib-watch": "^0.6.1",
+    "istanbul": "^0.4.3",
     "mocha": "^2.3.4",
     "supertest": "~0.15.0"
   }

@@ -7,3 +7,4 @@ ui/config.js
 nohup*.out
 **/*.log
 debug
+coverage
