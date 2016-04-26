@@ -4,7 +4,7 @@
   "main": "api/auth.js",
   "scripts": {
     "test": "./test/install.sh && mocha --reporter spec",
-    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js"
+    "cover": "./test/install.sh && node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js"
   },
   "dependencies": {
     "async": "^1.5.0",
