@@ -14,7 +14,7 @@ var app = require('../api/server').app;
 
 before(function(done) {
     console.log("synching sequelize");
-    this.timeout(4000);
+    this.timeout(10000);
     db.sequelize.sync({force: true}).then(function() {
         console.log("synchronized");
         done();
