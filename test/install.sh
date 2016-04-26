@@ -13,5 +13,5 @@ fi
 if [ ! -f api/config/index.js ];
 then
     echo "installing test config/index.js"
-    cp api/config/sample.index.js api/config.index.js 
+    cp api/config/sample.index.js api/config/index.js 
 fi
