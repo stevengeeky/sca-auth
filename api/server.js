@@ -13,6 +13,7 @@ var Sequelize = require('sequelize');
 var passport = require('passport');
 var winston = require('winston');
 var expressWinston = require('express-winston');
+var cors = require('cors');
 
 //mine
 var config = require('./config');
@@ -24,6 +25,7 @@ var migration = require('./migration');
 //init express
 var app = express();
 //app.use(config.logger.express);
+app.use(cors());
 app.use(bodyParser.json()); //parse application/json
 app.use(bodyParser.urlencoded({extended: false})); //parse application/x-www-form-urlencoded //TODO - do we need this?
 app.use(expressWinston.logger(config.logger.winston)); 
