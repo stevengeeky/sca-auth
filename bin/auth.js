@@ -23,6 +23,7 @@ case "modscope": modscope(); break;
 case "listuser": listuser(); break;
 case "issue": issue(); break;
 case "setpass": setpass(); break;
+case "newuser": newuser(); break;
 default:
     console.log(fs.readFileSync(__dirname+"/usage.txt", {encoding: "utf8"})); 
 }
@@ -157,4 +158,29 @@ function setpass() {
             });
         });
     })
+}
+
+function newuser() {
+    if(!argv.username) {
+        logger.error("please specify --username <username>");
+        process.exit(1);
+    }
+    if(!argv.fullname) {
+        logger.error("please specify --fullname <fullname>");
+        process.exit(1);
+    }
+    if(!argv.email) {
+        logger.error("please specify --email <fullname>");
+        process.exit(1);
+    }
+
+    db.User.create({
+        username: argv.username,
+        fullname: argv.fullname,
+        email: argv.email,
+        email_confirmed: true,
+    }).then(function(_user) {
+        if(!_user) return logger.error("couldn't register new user");
+        logger.info("successfully created a user - now you might want to reset password / setscope");
+    });
 }
