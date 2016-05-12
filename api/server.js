@@ -14,6 +14,7 @@ var passport = require('passport');
 var winston = require('winston');
 var expressWinston = require('express-winston');
 var cors = require('cors');
+//var swagger = require('swagger-node-express');
 
 //mine
 var config = require('./config');
@@ -30,8 +31,10 @@ app.use(bodyParser.json()); //parse application/json
 app.use(bodyParser.urlencoded({extended: false})); //parse application/x-www-form-urlencoded //TODO - do we need this?
 app.use(expressWinston.logger(config.logger.winston)); 
 app.use(cookieParser()); //TODO - do we really need this?
-//app.use(common.tokenParser());
 app.use(passport.initialize());//needed for express-based application
+
+//swagger.setAppHandler(app);
+//swagger.configure("http://localhost/v1", "0.1");
 
 app.use('/', require('./controllers'));
 

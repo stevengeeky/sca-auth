@@ -13,6 +13,17 @@ var logger = new winston.Logger(config.logger.winston);
 var common = require('../common');
 var db = require('../models');
 
+/**
+ * @api {post} /refresh Refresh JWT Token.
+ * @apiDescription JWT Token normally lasts for a few hours. Application should call this API periodically
+ * to get it refreshed before it expires.
+ * @apiName Refresh
+ * @apiGroup User
+ *
+ * @apiHeader {String} authorization A valid JWT token
+ *
+ * @apiSuccess {Object} jwt New JWT token
+ */
 router.post('/refresh', jwt({secret: config.auth.public_key}), function(req, res, next) {
     db.User.findOne({where: {id: req.user.sub}}).then(function(user) {
         if(!user) return next("Couldn't find any user with sub:"+req.user.sub);
@@ -26,9 +37,12 @@ router.post('/refresh', jwt({secret: config.auth.public_key}), function(req, res
     });
 });
 
-router.post('/send_email_confirmation', function(req, res, next) {
+//TODO this API send any SCA user email with URL provided by an user - which is a major security risk
+//I should use configured URL for referer
+router.post('/send_email_confirmation', function(req, res, next) { 
     db.User.findOne({where: {id: req.body.sub}}).then(function(user) {
         if(!user) return next("Couldn't find any user with sub:"+req.body.sub);
+        if(user.email_confirmed) return next("Email already confirmed.");
         if(!req.headers.referer) return next("referer not set.. can't send confirmation");
         common.send_email_confirmation(req.headers.referer, user, function(err) {
             if(err) return next(err);
@@ -47,6 +61,14 @@ router.post('/confirm_email', function(req, res, next) {
     });
 });
 
+
+/**
+ * @api {get} /health Get current service status
+ * @apiName Health
+ * @apiGroup System
+ *
+ * @apiSuccess {String} status 'ok' or 'failed'
+ */
 router.get('/health', function(req, res) {
     res.json({status: 'ok'});
 });
@@ -74,8 +96,25 @@ router.get('/config', function(req, res) {
     res.json(c); 
 });
 
-//returns things that user might want to know about himself.
-//password_hash will be set to true if the password is set, otherwise null
+/**
+ * @api {get} /me Get user details
+ * @apiName SendEmailNotification
+ * @apiDescription Rreturns things that user might want to know about himself.
+ * password_hash will be set to true if the password is set, otherwise null
+ *
+ * @apiGroup User
+ * 
+ * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "username": "hayashis",
+ *         "fullname": "Soichi Hayashi",
+ *         "email": "hayashis@iu.edu",
+ *         "email_confirmed": true,
+ *         "iucas": "hayashis"
+ *     }
+ */
 router.get('/me', jwt({secret: config.auth.public_key}), function(req, res) {
     db.User.findOne({
         where: {id: req.user.sub},
