@@ -14,18 +14,15 @@ var passport = require('passport');
 var winston = require('winston');
 var expressWinston = require('express-winston');
 var cors = require('cors');
-//var swagger = require('swagger-node-express');
 
 //mine
 var config = require('./config');
 var logger = new winston.Logger(config.logger.winston);
 var db = require('./models');
 var migration = require('./migration');
-//var common = require('./common');
 
 //init express
 var app = express();
-//app.use(config.logger.express);
 app.use(cors());
 app.use(bodyParser.json()); //parse application/json
 app.use(bodyParser.urlencoded({extended: false})); //parse application/x-www-form-urlencoded //TODO - do we need this?
@@ -33,25 +30,7 @@ app.use(expressWinston.logger(config.logger.winston));
 app.use(cookieParser()); //TODO - do we really need this?
 app.use(passport.initialize());//needed for express-based application
 
-//swagger.setAppHandler(app);
-//swagger.configure("http://localhost/v1", "0.1");
-
 app.use('/', require('./controllers'));
-
-/*
-app.use(function(req, res, next) {
-    // catch 404 and forward to error handler
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
-
-app.use(function(err, req, res, next) {
-    console.dir(err);
-    res.status(err.status || 500);
-    res.json({message: err.message});
-});
-*/
 
 //error handling
 app.use(expressWinston.errorLogger(config.logger.winston));
