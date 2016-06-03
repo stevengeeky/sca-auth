@@ -5,11 +5,12 @@ function handle_auth_issues(res) {
         console.log("invalid res");
         return;
     }
-    if(res.data.code) {
+    if(res.data && res.data.code) {
         var path = "#/"+res.data.code;
         if(res.data.sub) {
             path += '?sub='+encodeURIComponent(res.data.sub);
         }
         return path;
     }
+    console.dir(res);
 }

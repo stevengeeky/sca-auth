@@ -20,7 +20,7 @@ var db = require('../models');
  * @apiName Refresh
  * @apiGroup User
  *
- * @apiHeader {String} authorization A valid JWT token
+ * @apiHeader {String} authorization A valid JWT token (Bearer:)
  *
  * @apiSuccess {Object} jwt New JWT token
  */
