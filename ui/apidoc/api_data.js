@@ -1,9 +1,54 @@
 define({ "api": [
   {
+    "type": "post",
+    "url": "/local/auth",
+    "title": "Perform authentication",
+    "name": "LocalAuth",
+    "description": "<p>Perform authentication using username(or email) and SCA password.</p>",
+    "group": "Local",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "username",
+            "description": "<p>Username or email address</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "password",
+            "description": "<p>SCA local Password</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "jwt",
+            "description": "<p>JWT token</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/local.js",
+    "groupTitle": "Local"
+  },
+  {
     "type": "get",
     "url": "/health",
-    "title": "Get current service status",
-    "name": "Health",
+    "title": "Get API status",
+    "description": "<p>Get current API status</p>",
+    "name": "GetHealth",
     "group": "System",
     "success": {
       "fields": {
@@ -37,7 +82,7 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "authorization",
-            "description": "<p>A valid JWT token</p>"
+            "description": "<p>A valid JWT token (Bearer:)</p>"
           }
         ]
       }

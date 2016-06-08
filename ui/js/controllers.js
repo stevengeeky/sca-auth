@@ -1,31 +1,12 @@
 'use strict';
 
 //just a service to load all users from auth service
-app.factory('serverconf', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
+app.factory('serverconf', ['appconf', '$http', function(appconf, $http) {
     return $http.get(appconf.api+'/config')
     .then(function(res) {
         return res.data;
     });
 }]);
-
-/*
-app.factory('profile', ['appconf', '$http', 'jwtHelper', function(appconf, $http, jwtHelper) {
-    var jwt = localStorage.getItem(appconf.jwt_id);
-    var user = jwtHelper.decodeToken(jwt);
-    var pub = {fullname: null};
-
-    //$http.get(appconf.profile_api+'/public/'+user.sub)
-    $http.get(appconf.api+'/me/')
-    .success(function(profile, status, headers, config) {
-        for(var k in profile) {         
-            pub[k] = profile[k]; 
-        }
-    });
-    return {
-        pub: pub,
-    }
-}]);
-*/
 
 app.controller('HeaderController', ['$scope', 'appconf', '$route', 'toaster', '$http', 'serverconf', 'menu',
 function($scope, appconf, $route, toaster, $http, serverconf, menu) {
@@ -226,7 +207,6 @@ function($scope, appconf, $route, toaster, $http, serverconf, jwtHelper, scaMess
     $scope.form_password = {};
     scaMessage.show(toaster);
 
-    //for debug pane
     var jwt = localStorage.getItem(appconf.jwt_id);
     var user = jwtHelper.decodeToken(jwt);
     $scope.user = user;

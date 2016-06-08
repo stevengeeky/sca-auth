@@ -37,8 +37,18 @@ passport.use(new passport_localst(
     }
 ));
 
+/**
+ * @api {post} /local/auth Perform authentication
+ * @apiName LocalAuth
+ * @apiDescription Perform authentication using username(or email) and SCA password get JWT token.
+ * @apiGroup Local
+ *
+ * @apiParam {String} username Username or email address
+ * @apiParam {String} password SCA local Password
+ *
+ * @apiSuccess {Object} jwt JWT token
+ */
 router.post('/auth', function(req, res, next) {
-    //logger.debug("authentated local user");
     passport.authenticate('local', function(err, user, info) {
         if (err) return next(err);
         if (!user) return next(info);

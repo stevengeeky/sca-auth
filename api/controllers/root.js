@@ -63,8 +63,9 @@ router.post('/confirm_email', function(req, res, next) {
 
 
 /**
- * @api {get} /health Get current service status
- * @apiName Health
+ * @api {get} /health Get API status
+ * @apiDescription Get current API status
+ * @apiName GetHealth
  * @apiGroup System
  *
  * @apiSuccess {String} status 'ok' or 'failed'
