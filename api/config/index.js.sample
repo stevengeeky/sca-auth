@@ -14,11 +14,23 @@ exports.auth = {
     //I have to store these urls here. 
     //I think I can somehow proxy validation from the brower so that I can do everything on browser
     
+    /* deprecated
     //user scopes to give to all new users when registered
     default_scopes: {
         sca: ["user"],
         mca: ["user"], //needed by mca
         dicom: ["user"], //needed by dicom
+    },
+    */
+
+    //default user object when registered
+    default: {
+        scopes: {
+            sca: ["user"],
+            mca: ["user"], //needed by mca
+            dicom: ["user"], //needed by dicom
+        },
+        gids: [ /*123*/ ],
     },
 
     //isser to use for generated jwt token
