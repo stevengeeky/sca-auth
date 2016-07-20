@@ -53,8 +53,21 @@ exports.email_confirmation = {
     from: 'hayashis@iu.edu',  //iu mail server will reject if this is non-repliable address/
 };
 
-//for user/pass login
+//for user/pass login (you should use either local, or ldap - but not both)
+/*
 exports.local = {
+};
+*/
+//for ldap user/pass 
+exports.ldap = {
+    //passport-ldap config
+    server: {
+        url: 'ldaps://ads.iu.edu:636',
+        bindDn: 'CN=sciaptad,OU=Accounts,DC=ads,DC=iu,DC=edu',
+        bindCredentials: fs.readFileSync(__dirname+'/ldap.password', {encoding: 'utf8'}).trim(),
+        searchBase: 'ou=Accounts,dc=ads,dc=iu,dc=edu',
+        searchFilter: '(sAMAccountName={{username}})'
+    }
 };
 
 //for x509
@@ -82,6 +95,7 @@ exports.db = {
     "logging": false
 }
 
+/*
 //for iucas login
 exports.iucas = {
     //url to redirect after successful iucas login (with ?jwt=<jwt>)
@@ -91,22 +105,16 @@ exports.iucas = {
     //used for casurl, and also used to return to the auth page to display login error messages
     //home_url: 'https://soichi7.ppa.iu.edu/auth',
 };
+*/
 
 exports.express = {
     //web server port
     port: 12000,
 };
 
-/* moved to model.json
-exports.sequelize = {
-    //for sqlite (if you use it)
-    dialect: 'sqlite', 
-    storage: '/usr/local/tmp/auth.sqlite'
-};
-*/
-
 exports.logger = {
     winston: {
+        requestWhitelist: ['url', /*'headers',*/ 'method', 'httpVersion', 'originalUrl', 'query'],
         transports: [
             //display all logs to console
             new winston.transports.Console({
@@ -122,23 +130,6 @@ exports.logger = {
             new (winston.transports.File)({
                 filename: 'error.log',
                 level: 'warn'
-            })
-            */
-        ]
-    },
-
-    //logfile to store all requests (and its results) in json
-    request: {
-        transports: [
-            new (winston.transports.File)({
-                filename: 'request.log',
-                json: true
-            })
-            /* (not sure how to get this working)
-            new (winston.transports.Logstash)({
-                port: 28777,
-                node_name: 'isdp-soichi-dev',
-                host: 'soichi7.ppa.iu.edu'
             })
             */
         ]
