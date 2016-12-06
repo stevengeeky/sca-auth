@@ -30,7 +30,7 @@ exports.auth = {
             mca: ["user"], //needed by mca
             dicom: ["user"], //needed by dicom
         },
-        gids: [ /*123*/ ],
+        gids: [ 1 ],
     },
 
     //isser to use for generated jwt token
