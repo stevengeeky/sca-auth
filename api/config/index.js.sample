@@ -110,7 +110,6 @@ exports.db = {
     logging: false
 }
 
-/*
 //for iucas login
 exports.iucas = {
     //url to redirect after successful iucas login (with ?jwt=<jwt>)
@@ -118,9 +117,8 @@ exports.iucas = {
     //this is not the same thing as the ui/config.js -- default_redirect_url !!
 
     //used for casurl, and also used to return to the auth page to display login error messages
-    //home_url: 'https://soichi7.ppa.iu.edu/auth',
+    //home_url: 'https://soichi7.ppa.iu.edu/auth', //TODO not sure if this is still used
 };
-*/
 
 exports.express = {
     //web server port
