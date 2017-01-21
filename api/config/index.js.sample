@@ -44,7 +44,7 @@ exports.auth = {
     //option for jwt.sign
     sign_opt: {algorithm: 'RS256'},
 
-    //allow_signup: false, //prevent user from signing in
+    //allow_signup: false, //prevent user from signing in (set false if not using local auth)
 };
     
 //comment this out if you don't want to confirm email
@@ -55,11 +55,10 @@ exports.email_confirmation = {
 };
 
 //for user/pass login (you should use either local, or ldap - but not both)
-/*
 exports.local = {
 };
-*/
 
+/*
 //for ldap user/pass 
 exports.ldap = {
     //passport-ldap config
@@ -71,6 +70,7 @@ exports.ldap = {
         searchFilter: '(sAMAccountName={{username}})'
     }
 };
+*/
 
 //for x509
 exports.x509 = {
