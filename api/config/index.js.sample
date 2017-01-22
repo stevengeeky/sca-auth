@@ -55,10 +55,8 @@ exports.email_confirmation = {
 };
 
 //for user/pass login (you should use either local, or ldap - but not both)
-exports.local = {
-};
+exports.local = {};
 
-/*
 //for ldap user/pass 
 exports.ldap = {
     //passport-ldap config
@@ -70,7 +68,6 @@ exports.ldap = {
         searchFilter: '(sAMAccountName={{username}})'
     }
 };
-*/
 
 //for x509
 exports.x509 = {
