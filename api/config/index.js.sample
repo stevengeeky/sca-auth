@@ -47,15 +47,25 @@ exports.auth = {
     //allow_signup: false, //prevent user from signing in (set false if not using local auth)
 };
     
-//comment this out if you don't want to confirm email
 exports.email_confirmation = {
-    url: 'https://soichi7.ppa.iu.edu/auth', //only used if req.header.referer is not set (like via cli)
-    subject: 'SCA Account Confirmation for soichi7',
-    from: 'hayashis@iu.edu',  //iu mail server will reject if this is non-repliable address/
+    //deprecated
 };
 
 //for user/pass login (you should use either local, or ldap - but not both)
-exports.local = {};
+exports.local = {
+    //url base for callbacks only used if req.header.referer is not set (like via cli)
+    url: 'https://soichi7.ppa.iu.edu/auth', 
+    
+    //comment this out if you don't want to confirm email
+    email_confirmation: {
+        subject: 'SCA Account Confirmation for soichi7',
+        from: 'hayashis@iu.edu',  //iu mail server will reject if this is non-repliable address/
+    },
+    email_passreset: {
+        subject: 'SCA password reset instruction',
+        from: 'hayashis@iu.edu',  //iu mail server will reject if this is non-repliable address/
+    }
+};
 
 //for ldap user/pass 
 exports.ldap = {
