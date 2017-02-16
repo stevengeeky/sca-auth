@@ -25,6 +25,7 @@ exports.auth = {
 
     //default user object when registered
     default: {
+        //this can be empty.. but don't remove it! (a lot of app expects scopes to exist)
         scopes: {
             sca: ["user"],
             mca: ["user"], //needed by mca
