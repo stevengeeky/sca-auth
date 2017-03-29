@@ -112,31 +112,16 @@ exports.facebook = {
     callback_url: "https://soichi7.ppa.iu.edu/api/auth/facebook/callback",
 };
 
-/*
-//http://www.cilogon.org/oidc
-exports.oauth2 = {
-    authorization_url: "https://cilogon.org/authorize",
-    token_url: "https://cilogon.org/oauth2/token",
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/oauth2/callback",
-    //userinfo_url: "https://cilogon.org/oauth2/userinfo", //specific to cilogon?
-
-    client_id: "myproxy:oa4mp,2012:/client_id/234dba466fc3dd2dd30e3414087e3c1b",
-    client_secret: "lDiGNgw5zLXcEXzQK1K8uM8kDYD_pLStYcIRKq-aH_OgOa2aJ9kJ95FkxbHhNardbBZUY7LhuFrMT7sYWwprVQ",
-
-};
-*/
-
 //openid connect (cilogon)
 //http://www.cilogon.org/oidc
 //most info can be downloaded from https://cilogon.org/.well-known/openid-configuration
 exports.oidc = {
     issuer: "https://cilogon.org",
-
     authorization_url: "https://cilogon.org/authorize",
     token_url: "https://cilogon.org/oauth2/token",
-    userinfo_url: "https://cilogon.org/oauth2/userinfo", //specific to cilogon?
+    userinfo_url: "https://cilogon.org/oauth2/userinfo", //specific to openid connect
 
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/oauth2/callback",
+    callback_url: "https://soichi7.ppa.iu.edu/api/auth/oidc/callback",
     scope: "openid profile email org.cilogon.userinfo",
 
     client_id: "myproxy:oa4mp,2012:/client_id/234dba466fc3dd2dd30e3414087e3c1b",
