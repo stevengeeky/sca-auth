@@ -126,6 +126,8 @@ exports.oidc = {
 
     client_id: "myproxy:oa4mp,2012:/client_id/234dba466fc3dd2dd30e3414087e3c1b",
     client_secret: "lDiGNgw5zLXcEXzQK1K8uM8kDYD_pLStYcIRKq-aH_OgOa2aJ9kJ95FkxbHhNardbBZUY7LhuFrMT7sYWwprVQ",
+
+    idplist: "https://cilogon.org/include/idplist.xml",
 };
 
 exports.db = {
