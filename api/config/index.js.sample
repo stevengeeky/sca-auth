@@ -55,7 +55,7 @@ exports.email_confirmation = {
 //for user/pass login (you should use either local, or ldap - but not both)
 exports.local = {
     //url base for callbacks only used if req.header.referer is not set (like via cli)
-    url: 'https://soichi7.ppa.iu.edu/auth', 
+    //url: 'https://soichi7.ppa.iu.edu/auth', 
     
     //comment this out if you don't want to confirm email
     email_confirmation: {
@@ -87,6 +87,9 @@ exports.x509 = {
     //for apache, SSLOptions +StdEnvVars will set it to SSL_CLIENT_S_DN
     dn_header: 'dn',
     allow_origin: '*', 
+
+    //callback used to receive jwt (should be the auth ui url)
+    callback_url: "https://soichi7.ppa.iu.edu/auth", 
 };
 
 //create a "project" at https://console.developers.google.com/apis/dashboard and configure
