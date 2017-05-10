@@ -54,9 +54,6 @@ exports.email_confirmation = {
 
 //for user/pass login (you should use either local, or ldap - but not both)
 exports.local = {
-    //url base for callbacks only used if req.header.referer is not set (like via cli)
-    //url: 'https://soichi7.ppa.iu.edu/auth', 
-    
     //comment this out if you don't want to confirm email
     email_confirmation: {
         subject: 'SCA Account Confirmation for soichi7',
@@ -68,8 +65,10 @@ exports.local = {
     }
 };
 
-//for ldap user/pass 
 exports.ldap = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+    
     //passport-ldap config
     server: {
         url: 'ldaps://ads.iu.edu:636',
@@ -80,8 +79,10 @@ exports.ldap = {
     }
 };
 
-//for x509
 exports.x509 = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+
     //http header to look for x509 DN 
     //for nginx set proxy_set_header DN $ssl_client_s_dn
     //for apache, SSLOptions +StdEnvVars will set it to SSL_CLIENT_S_DN
@@ -92,13 +93,18 @@ exports.x509 = {
 //create a "project" at https://console.developers.google.com/apis/dashboard and configure
 //oauth credential
 exports.google = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+
     client_id: "714649905668-v6fmqrrba6i2pfe7pq30brj602ng87ik.apps.googleusercontent.com",
     client_secret: "ny8mrSbP3ZjmcxYdD-Aj2aMz",
     callback_url: "https://soichi7.ppa.iu.edu/api/auth/google/callback", //google api is very strict about this..
 };
 
-//register at ....
 exports.github = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+
     client_id: "1b4954b828f45bbd286b",
     client_secret: "3a79e473da458229ff789c10d9a02fcb6bbda264",
     callback_url: "https://soichi7.ppa.iu.edu/api/auth/github/callback",
@@ -106,7 +112,9 @@ exports.github = {
 
 //register at https://developers.facebook.com/docs/facebook-login/web
 exports.facebook = {
-    //v2.8
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+    
     app_id: "1878618049037602",
     app_secret: "78130a8a60f807b2ac1a93fb11cf49f4",
     callback_url: "https://soichi7.ppa.iu.edu/api/auth/facebook/callback",
@@ -116,6 +124,9 @@ exports.facebook = {
 //http://www.cilogon.org/oidc
 //most info can be downloaded from https://cilogon.org/.well-known/openid-configuration
 exports.oidc = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: true, 
+
     issuer: "https://cilogon.org",
     authorization_url: "https://cilogon.org/authorize",
     token_url: "https://cilogon.org/oauth2/token",
@@ -130,14 +141,11 @@ exports.oidc = {
     idplist: "https://cilogon.org/include/idplist.xml",
 };
 
-exports.db = {
-    dialect: "sqlite", 
-    storage: "/usr/local/sqlite/auth.sqlite",
-    logging: false
-}
-
 //for iucas login
 exports.iucas = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false, 
+   
     //url to redirect after successful iucas login (with ?jwt=<jwt>)
     //you should take jwt, store it on localstorage, and redirect to wherever you want to go
     //this is not the same thing as the ui/config.js -- default_redirect_url !!
@@ -145,6 +153,12 @@ exports.iucas = {
     //used for casurl, and also used to return to the auth page to display login error messages
     //home_url: 'https://soichi7.ppa.iu.edu/auth', //TODO not sure if this is still used
 };
+
+exports.db = {
+    dialect: "sqlite", 
+    storage: "/usr/local/sqlite/auth.sqlite",
+    logging: false
+}
 
 exports.express = {
     //web server port
