@@ -133,7 +133,7 @@ exports.oidc = {
     userinfo_url: "https://cilogon.org/oauth2/userinfo", //specific to openid connect
 
     callback_url: "https://soichi7.ppa.iu.edu/api/auth/oidc/callback",
-    scope: "openid profile email org.cilogon.userinfo",
+    //scope: "openid profile email org.cilogon.userinfo",
 
     client_id: "myproxy:oa4mp,2012:/client_id/234dba466fc3dd2dd30e3414087e3c1b",
     client_secret: "lDiGNgw5zLXcEXzQK1K8uM8kDYD_pLStYcIRKq-aH_OgOa2aJ9kJ95FkxbHhNardbBZUY7LhuFrMT7sYWwprVQ",
@@ -152,6 +152,18 @@ exports.iucas = {
 
     //used for casurl, and also used to return to the auth page to display login error messages
     //home_url: 'https://soichi7.ppa.iu.edu/auth', //TODO not sure if this is still used
+};
+
+//register at https://orcid.org/developer-tools
+exports.orcid = {
+    auto_register: true,
+
+    authorization_url: "https://orcid.org/oauth/authorize",
+    token_url: "https://pub.orcid.org/oauth/token",
+    
+    client_id: "APP-8TM9RWZMIT43M9TL",
+    client_secret: "4bc3d53b-dc63-471c-a689-2f8ae13245bc",
+    callback_url: "https://soichi7.ppa.iu.edu/api/auth/orcid/callback",
 };
 
 exports.db = {
