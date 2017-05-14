@@ -103,7 +103,7 @@ exports.google = {
 
 exports.github = {
     //set to true if you want to auto register user account when user first login using this account
-    auto_register: false,
+    auto_register: true,
 
     client_id: "1b4954b828f45bbd286b",
     client_secret: "3a79e473da458229ff789c10d9a02fcb6bbda264",
