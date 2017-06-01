@@ -62,6 +62,16 @@ exports.local = {
     email_passreset: {
         subject: 'SCA password reset instruction',
         from: 'hayashis@iu.edu',  //iu mail server will reject if this is non-repliable address/
+    },
+
+    //nodemailer config
+    mailer: {
+        host: 'mail-relay.iu.edu',
+        secure: true,
+        auth: {
+            user: 'brlife',
+            pass: fs.readFileSync(__dirname+'/smtp.password', {encoding: 'ascii'}).trim(),
+        }
     }
 };
 
