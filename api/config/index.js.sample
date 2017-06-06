@@ -6,26 +6,9 @@ var fs = require('fs');
 var winston = require('winston');
 
 exports.auth = {
-    //mongodb: "mongodb://localhost/auth",
-    
-    //following are used by IU CAS authentication.
-    //normally, these url should be configured on UI (which they are..)
-    //but since I have to jump browser to api endpoint (so that it can validate the token),
-    //I have to store these urls here. 
-    //I think I can somehow proxy validation from the brower so that I can do everything on browser
-    
-    /* deprecated
-    //user scopes to give to all new users when registered
-    default_scopes: {
-        sca: ["user"],
-        mca: ["user"], //needed by mca
-        dicom: ["user"], //needed by dicom
-    },
-    */
-
     //default user object when registered
     default: {
-        //this can be empty.. but don't remove it! (a lot of app expects scopes to exist)
+        //scopes can be empty.. but don't remove it! (a lot of app expects scopes object to exist)
         scopes: {
             sca: ["user"],
             mca: ["user"], //needed by mca
@@ -201,22 +184,7 @@ exports.logger = {
                 level: 'debug',
                 colorize: true
             }),
-            /*
-            //store all warnings / errors in error.log
-            new (winston.transports.File)({
-                filename: '/var/log/sca/error.log',
-                level: 'warn'
-            })
-            */
         ]
     }
 }
 
-/*
-exports.logger = {
-    express: require('morgan')('combined'),
-    api: 'log/api.log',
-    exception: 'log/exception.log',
-    //express_error_handler: {dumpExceptions: true, showStack: true},
-}
-*/
