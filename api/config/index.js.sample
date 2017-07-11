@@ -37,12 +37,9 @@ exports.email_confirmation = {
 
 //for user/pass login (you should use either local, or ldap - but not both)
 exports.local = {
-<<<<<<< HEAD
     //url base for callbacks only used if req.header.referer is not set (like via cli)
     url: 'https://dev1.soichi.us/auth', 
     
-=======
->>>>>>> 9873bc073b1b14fb9b3966f0f57cb435c1e28ef6
     //comment this out if you don't want to confirm email
     email_confirmation: {
         subject: 'Account Confirmation for dev1.soichi.us',
@@ -104,8 +101,8 @@ exports.github = {
     //set to true if you want to auto register user account when user first login using this account
     auto_register: true,
 
-    client_id: "1b4954b828f45bbd286b",
-    client_secret: "3a79e473da458229ff789c10d9a02fcb6bbda264",
+    client_id: "b4ceadc55a041ac382aa",
+    client_secret: "25549caa136d3704ceedfaa325bd492b9106644e",
     callback_url: "https://dev1.soichi.us/api/auth/github/callback",
 };
 
@@ -131,7 +128,7 @@ exports.oidc = {
     token_url: "https://cilogon.org/oauth2/token",
     userinfo_url: "https://cilogon.org/oauth2/userinfo", //specific to openid connect
 
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/oidc/callback",
+    callback_url: "https://dev1.soichi.us/api/auth/oidc/callback",
     //scope: "openid profile email org.cilogon.userinfo",
 
     client_id: "myproxy:oa4mp,2012:/client_id/234dba466fc3dd2dd30e3414087e3c1b",
@@ -162,12 +159,12 @@ exports.orcid = {
     
     client_id: "APP-8TM9RWZMIT43M9TL",
     client_secret: "4bc3d53b-dc63-471c-a689-2f8ae13245bc",
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/orcid/callback",
+    callback_url: "https://dev1.soichi.us/api/auth/orcid/callback",
 };
 
 exports.db = {
     dialect: "sqlite", 
-    storage: "/usr/local/sqlite/auth.sqlite",
+    storage: "/home/hayashis/auth.sqlite",
     logging: false
 }
 
