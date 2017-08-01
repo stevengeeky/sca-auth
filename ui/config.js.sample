@@ -14,24 +14,27 @@ angular.module('app.config', [])
     ldap_logo: 'images/iulogo.png',
     ldap_label: 'IU Username',
 
+    oauth2_logo: 'images/cilogon.png',
+    oauth2_label: 'InCommon Institutional',
+
     oidc_logo: 'images/cilogon.png',
     //oidc_label: 'CILogon',
 
     //URL for auth service API
     api: '../api/auth',
-    
+
     //URL for x509 validation API base
-    x509api: 'https://soichi7.ppa.iu.edu:9443',
+    x509api: 'https://dev1.soichi.us:9443',
 
     //deprecated - always set auth_redirect
     //default location to redirect after successful login
-    //default_redirect_url: '../profile', 
-    //default_redirect_url: '/auth/#!/settings/account',  //don't start with #
+
+    default_redirect_url: '/auth/#!/settings/account',  //don't start with #
 
     jwt_id: 'jwt',
     iucas_url: 'https://cas.iu.edu/cas/login',
 
-    jwt_whitelist: ['soichi7.ppa.iu.edu'], //list of domains to allow jwtInterceptor to send jwt to
+    jwt_whitelist: ['dev1.soichi.us'], //list of domains to allow jwtInterceptor to send jwt to
 
     //show/hide various login options
     show: {
@@ -42,6 +45,8 @@ angular.module('app.config', [])
         x509: true,
         google: false,
         github: true,
+        facebook: true,
+
         iucas: false,
         facebook: false,
         orcid: true, 
@@ -49,7 +54,6 @@ angular.module('app.config', [])
         oidc: true, //cilogon openid-connect service
         oidc_selector: false, //show idp selector
 
-           
         signup: true,
     },
 });

@@ -37,13 +37,16 @@ exports.email_confirmation = {
 
 //for user/pass login (you should use either local, or ldap - but not both)
 exports.local = {
+    //url base for callbacks only used if req.header.referer is not set (like via cli)
+    url: 'https://dev1.soichi.us/auth', 
+    
     //comment this out if you don't want to confirm email
     email_confirmation: {
-        subject: 'SCA Account Confirmation for soichi7',
+        subject: 'Account Confirmation for dev1.soichi.us',
         from: 'hayashis@iu.edu',  //iu mail server will reject if this is non-repliable address/
     },
     email_passreset: {
-        subject: 'SCA password reset instruction',
+        subject: 'Password reset instruction for dev1.soichi.us',
         from: 'hayashis@iu.edu',  //iu mail server will reject if this is non-repliable address/
     },
 
@@ -91,16 +94,16 @@ exports.google = {
 
     client_id: "714649905668-v6fmqrrba6i2pfe7pq30brj602ng87ik.apps.googleusercontent.com",
     client_secret: "ny8mrSbP3ZjmcxYdD-Aj2aMz",
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/google/callback", //google api is very strict about this..
+    callback_url: "https://dev1.soichi.us/api/auth/google/callback", //google api is very strict about this..
 };
 
 exports.github = {
     //set to true if you want to auto register user account when user first login using this account
     auto_register: true,
 
-    client_id: "1b4954b828f45bbd286b",
-    client_secret: "3a79e473da458229ff789c10d9a02fcb6bbda264",
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/github/callback",
+    client_id: "b4ceadc55a041ac382aa",
+    client_secret: "25549caa136d3704ceedfaa325bd492b9106644e",
+    callback_url: "https://dev1.soichi.us/api/auth/github/callback",
 };
 
 //register at https://developers.facebook.com/docs/facebook-login/web
@@ -110,7 +113,7 @@ exports.facebook = {
     
     app_id: "1878618049037602",
     app_secret: "78130a8a60f807b2ac1a93fb11cf49f4",
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/facebook/callback",
+    callback_url: "https:/dev1.soichi.us/api/auth/facebook/callback",
 };
 
 //openid connect (cilogon)
@@ -125,7 +128,7 @@ exports.oidc = {
     token_url: "https://cilogon.org/oauth2/token",
     userinfo_url: "https://cilogon.org/oauth2/userinfo", //specific to openid connect
 
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/oidc/callback",
+    callback_url: "https://dev1.soichi.us/api/auth/oidc/callback",
     //scope: "openid profile email org.cilogon.userinfo",
 
     client_id: "myproxy:oa4mp,2012:/client_id/234dba466fc3dd2dd30e3414087e3c1b",
@@ -144,7 +147,7 @@ exports.iucas = {
     //this is not the same thing as the ui/config.js -- default_redirect_url !!
 
     //used for casurl, and also used to return to the auth page to display login error messages
-    //home_url: 'https://soichi7.ppa.iu.edu/auth', //TODO not sure if this is still used
+    //home_url: 'https://dev1.soichi.us/auth', //TODO not sure if this is still used
 };
 
 //register at https://orcid.org/developer-tools
@@ -156,12 +159,12 @@ exports.orcid = {
     
     client_id: "APP-8TM9RWZMIT43M9TL",
     client_secret: "4bc3d53b-dc63-471c-a689-2f8ae13245bc",
-    callback_url: "https://soichi7.ppa.iu.edu/api/auth/orcid/callback",
+    callback_url: "https://dev1.soichi.us/api/auth/orcid/callback",
 };
 
 exports.db = {
     dialect: "sqlite", 
-    storage: "/usr/local/sqlite/auth.sqlite",
+    storage: "/home/hayashis/auth.sqlite",
     logging: false
 }
 

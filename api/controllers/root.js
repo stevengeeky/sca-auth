@@ -238,6 +238,25 @@ router.get('/user/:id', jwt({secret: config.auth.public_key}), function(req, res
     });
 });
 
+//issue user jwt (admin only)
+router.get('/jwt/:id', jwt({secret: config.auth.public_key}), function(req, res, next) {
+    if(!req.user.scopes.sca || !~req.user.scopes.sca.indexOf("admin")) return res.send(401);
+    db.User.findOne({
+        where: {id: req.params.id},
+        /*
+        attributes: [
+            'id', 'username', 'fullname',
+            'email', 'email_confirmed', 'iucas', 'googleid', 'github', 'x509dns', 
+            'times', 'scopes', 'active'],
+        */
+    }).then(function(user) {
+		common.createClaim(user, function(err, claim) {
+			if(err) return next(err);
+			res.json({jwt: common.signJwt(claim)});
+		});
+    }).catch(next);
+});
+
 //update user info (admin only)
 router.put('/user/:id', jwt({secret: config.auth.public_key}), function(req, res, next) {
     if(!~req.user.scopes.sca.indexOf("admin")) return res.send(401);
@@ -246,7 +265,7 @@ router.put('/user/:id', jwt({secret: config.auth.public_key}), function(req, res
         user.update(req.body).then(function(err) {
             res.json({message: "User updated successfully"});
         });
-    });
+    }).catch(next);
 });
 
 //return list of all groups (open to all users)
@@ -279,15 +298,10 @@ router.put('/group/:id', jwt({secret: config.auth.public_key}), function(req, re
         if (!group) return next("can't find group id:"+req.params.id);
         //first I need to get current admins..
         group.getAdmins().then(function(admins) {
-            //console.log(req.user.scopes.sca.indexOf("admin"));
             var admin_ids = [];
             admins.forEach(function(admin) {
                 admin_ids.push(admin.id); //toString so that I can compare with indexOf
             });
-            //console.dir(req.user.sub);
-            //console.dir(admin_ids);
-            //console.log(req.user.sub);
-            //console.log(admin_ids.indexOf(req.user.sub));
             if(!~req.user.scopes.sca.indexOf("admin") && !~admin_ids.indexOf(req.user.sub)) return res.send(401);
             //then update everything
             group.update(req.body.group).then(function(err) {
