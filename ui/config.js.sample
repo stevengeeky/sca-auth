@@ -9,7 +9,7 @@ angular.module('app.config', [])
     title: 'Authentication Service',
 
     admin_email: 'hayashis@iu.edu',
-    logo_400_url: 'images/soichidev.jpg',
+    logo_400_url: 'images/dev.jpg',
 
     ldap_logo: 'images/iulogo.png',
     ldap_label: 'IU Username',
