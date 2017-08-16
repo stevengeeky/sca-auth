@@ -140,7 +140,7 @@ exports.oidc = {
 //for iucas login
 exports.iucas = {
     //set to true if you want to auto register user account when user first login using this account
-    auto_register: false, 
+    auto_register: true, 
    
     //url to redirect after successful iucas login (with ?jwt=<jwt>)
     //you should take jwt, store it on localstorage, and redirect to wherever you want to go
