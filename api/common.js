@@ -9,6 +9,10 @@ const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 
 exports.createClaim = function(user, cb) {
+    if(!user.check) return cb("user object does not contain .check()");
+    var err = user.check();
+    if(err) return cb(err);
+    
     //load groups (using sequelize generated code)
     user.getGroups({attributes: ['id']}).then(function(groups) {
         var gids = [];
@@ -56,7 +60,7 @@ function do_send_email_confirmation(url, user, cb) {
         from: config.local.email_confirmation.from,
         to: user.email,
         subject: config.local.email_confirmation.subject,
-        text: "Hello!\n\nIf you have created a new SCA account, please visit following URL to confirm your email address.\n\n"+ fullurl,
+        text: "Hello!\n\nIf you have created a new account, please visit following URL to confirm your email address.\n\n"+ fullurl,
         //html:  ejs.render(html_template, params),
     }, function(err, info) {
         if(err) return cb(err);

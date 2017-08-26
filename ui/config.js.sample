@@ -43,11 +43,11 @@ angular.module('app.config', [])
         //ldap: true,
 
         x509: true,
-        google: false,
+        google: true,
         github: true,
         facebook: true,
 
-        iucas: false,
+        iucas: true,
         facebook: false,
         orcid: true, 
 

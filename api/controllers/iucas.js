@@ -14,17 +14,12 @@ var logger = new winston.Logger(config.logger.winston);
 var common = require('../common');
 var db = require('../models');
 
-function finduserByiucasid(id, cb) {
-    db.User.findOne({where: {"iucas": id}}).then(function(user) {
-        cb(null, user);
-    });
-}
 
 //TODO - maybe I should refactor this?
 function associate(jwt, uid, res, cb) {
     logger.info("associating user with iucas id:"+uid);
     db.User.findOne({where: {id: jwt.sub}}).then(function(user) {
-        if(!user) return cb("couldn't find user record with SCA sub:"+jwt.sub);
+        if(!user) return cb("couldn't find user record with sub:"+jwt.sub);
         user.iucas = uid;
         user.save().then(function() {
             var messages = [{type: "success", /*title: "IUCAS ID Associated",*/ message: "We have associated IU ID:"+uid+" to your account"}];
@@ -57,7 +52,6 @@ function register_newuser(uid, res, next) {
             //TODO I should refactor this part somehow..
             db.User.create(u).then(function(user) {
                 user.addMemberGroups(u.gids, function() {
-                    //done(user);    
                     issue_jwt(user, function(err, jwt) {
                         if(err) return next(err);
                         res.json({jwt:jwt, registered: true});
@@ -78,6 +72,7 @@ function issue_jwt(user, cb) {
     });
 }
 
+//XHR get only
 router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: false}), function(req, res, next) {
     var ticket = req.query.casticket;
 
@@ -90,13 +85,14 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
         timeout: 1000*5, //long enough?
     }, function (err, response, body) {
         if(err) return next(err);
+        logger.debug("verify responded", response.statusCode, body);
         if (response.statusCode == 200) {
             var reslines = body.split("\n");
             if(reslines[0].trim() == "yes") {
                 var uid = reslines[1].trim();
-                finduserByiucasid(uid, function(err, user) {
-                    if(err) return next(err);
+                db.User.findOne({where: {"iucas": uid}}).then(function(user) {
                     if(!user) {
+                        logger.debug("no user under iucas id", uid);
                         if(req.user) {
                             //If user is already logged in, but no iucas associated yet.. then auto-associate.
                             //If someone with only local account let someone else login via iucas on the same browser, while the first person is logged in,
@@ -110,16 +106,16 @@ router.get('/verify', jwt({secret: config.auth.public_key, credentialsRequired: 
                         } else if(config.iucas.auto_register) {
                             register_newuser(uid, res, next);
                         } else {
-                            res.redirect('/auth/#!/signin?msg='+"Your IU account("+profile.sub+") is not yet registered. Please login using your username/password first, then associate your IU account inside the account settings.");
+                            logger.debug("requesting redirect to signin");
+                            //res.redirect('/auth/#!/signin?msg='+"Your IU account("+uid+") is not yet registered. Please login using your username/password first, then associate your IU account inside the account settings.");
+                            res.json({redirect: '/auth/#!/signin', message: "Your IU account("+uid+") is not yet registered. Please login using your username/password first, then associate your IU account inside the account settings."});
                         }
                     } else {
-                        var err = user.check();
-                        if(err) return next(err);
-                        
                         //all good. issue token
                         logger.debug("iucas authentication successful. iu id:"+uid);
                         issue_jwt(user, function(err, jwt) {
                             if(err) return next(err);
+                            console.log("issuged token", jwt);
                             res.json({jwt:jwt});
                         });
                     }

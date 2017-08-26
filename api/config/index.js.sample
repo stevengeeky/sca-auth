@@ -92,8 +92,8 @@ exports.google = {
     //set to true if you want to auto register user account when user first login using this account
     auto_register: false,
 
-    client_id: "714649905668-v6fmqrrba6i2pfe7pq30brj602ng87ik.apps.googleusercontent.com",
-    client_secret: "ny8mrSbP3ZjmcxYdD-Aj2aMz",
+    client_id: "867367186795-bpfka0dq3alrsoi1fo39820loaaoasv4.apps.googleusercontent.com",
+    client_secret: "V7Xdqa9dFvnVkmaFvMitvcEn",
     callback_url: "https://dev1.soichi.us/api/auth/google/callback", //google api is very strict about this..
 };
 
@@ -140,7 +140,7 @@ exports.oidc = {
 //for iucas login
 exports.iucas = {
     //set to true if you want to auto register user account when user first login using this account
-    auto_register: false, 
+    auto_register: true, 
    
     //url to redirect after successful iucas login (with ?jwt=<jwt>)
     //you should take jwt, store it on localstorage, and redirect to wherever you want to go

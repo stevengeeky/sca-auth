@@ -12,12 +12,10 @@ app.controller('SigninController',
 function($scope, $route, toaster, $http, $routeParams, $location, scaMessage, $sce, $rootScope) {
     $scope.$parent.active_menu = 'signin';
     scaMessage.show(toaster);
-
-    if($routeParams.msg) {
-        toaster.error($routeParams.msg);
-    }
+    if($routeParams.msg) toaster.error($routeParams.msg);
 
     function handle_success(res) {
+        console.log("handling success", res.data);
         localStorage.setItem($scope.appconf.jwt_id, res.data.jwt);
         $rootScope.$broadcast("jwt_update", res.data.jwt)
         handle_redirect($scope.appconf);
@@ -57,9 +55,6 @@ function($scope, $route, toaster, $http, $routeParams, $location, scaMessage, $s
     }
 
     $scope.begin_x509 = function() {
-        //TODO - can't use CORS for x509 auth..
-        //$http.get($scope.appconf.x509api+"/x509/auth") 
-        //.then(handle_success, handle_error);
         window.location = $scope.appconf.x509api+"/x509/signin";
     }
     $scope.begin_oidc = function(idp) {
@@ -152,10 +147,20 @@ function($scope, $route, toaster, $http, $routeParams, scaMessage, $location, $r
         $http.post($scope.appconf.api+'/signup', $scope.form, postconfig)
         .then(function(res, status, headers, config) {
 
-            //set the real jwt!
-            localStorage.setItem($scope.appconf.jwt_id, res.data.jwt);
-            $rootScope.$broadcast("jwt_update", res.data.jwt);
+            if(res.data.jwt) {
+                //set the real jwt!
+                localStorage.setItem($scope.appconf.jwt_id, res.data.jwt);
+                $rootScope.$broadcast("jwt_update", res.data.jwt);
+            }
 
+            if(res.data.message) scaMessage.success(res.data.message);
+            //else scaMessage.success("Successfully signed up!");
+            
+            //redirect to somewhere..
+            if(res.data.path) $location.path(res.data.path); //maybe .. email_confirmation
+            else handle_redirect($scope.appconf);
+
+            /*
             //let's post auth profile for the first time
             $http.put($scope.appconf.api+'/profile', {
                 fullname: $scope.form.fullname,
@@ -171,6 +176,7 @@ function($scope, $route, toaster, $http, $routeParams, scaMessage, $location, $r
                 if(res.data && res.data.message) toaster.error(res.data.message);
                 else toaster.error(res.statusText);
             });
+            */
         }, function(res) {
             if(res.data && res.data.message) toaster.error(res.data.message);
             else toaster.error(res.statusText);
