@@ -30,6 +30,9 @@ exports.auth = {
 
     //allow_signup: false, //prevent user from signing in (set false if not using local auth)
 };
+
+console.log("I am uging public key");
+console.log(exports.auth.public_key.toString());
     
 exports.email_confirmation = {
     //deprecated
