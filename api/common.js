@@ -13,11 +13,11 @@ exports.createClaim = function(user, cb) {
     var err = user.check();
     if(err) return cb(err);
     
-    //load groups (using sequelize generated code)
-    user.getMemberGroups({attributes: ['id']}).then(function(groups) {
-        var gids = [];
+    //load active groups (using sequelize generated code)
+    user.getMemberGroups({attributes: ['id', 'active']}).then(function(groups) {
+        var gids = []; 
         groups.forEach(function(group) {
-            gids.push(group.id);  
+            if(group.active) gids.push(group.id);  
         });
         /* http://websec.io/2014/08/04/Securing-Requests-with-JWT.html
         iss: The issuer of the token
@@ -38,7 +38,7 @@ exports.createClaim = function(user, cb) {
             //can't use user.username which might not be set
             sub: user.id,  //TODO - toString() this!?
 
-            gids: gids,
+            gids, //TODO - toString() this also?
             profile: { 
                 username: user.username,
                 email: user.email,
