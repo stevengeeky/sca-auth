@@ -14,6 +14,10 @@ var app = angular.module('app', [
     'ui.select'
 ]);
 
+app.config(['$qProvider', function ($qProvider) {
+        $qProvider.errorOnUnhandledRejections(false);
+}]);
+
 //http://wijmo.com/easy-form-validation-in-angularjs/
 //note - error message only shows when user submit the form
 app.directive('match', function () {
