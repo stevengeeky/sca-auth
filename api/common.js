@@ -53,7 +53,6 @@ exports.createClaim = async function(user, cb) {
 
 exports.signJwt = function(claim, ttl) {
     if (ttl && !isNaN(+ttl)) claim.exp = (Date.now() + ttl)/1000;
-    console.log(claim.exp);
     return jwt.sign(claim, config.auth.private_key, config.auth.sign_opt);
 }
 
