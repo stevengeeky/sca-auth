@@ -1,0 +1,191 @@
+
+
+//node
+var fs = require('fs');
+
+//contrib
+var winston = require('winston');
+
+exports.auth = {
+    //default user object when registered
+    default: {
+        //scopes can be empty.. but don't remove it! (a lot of app expects scopes object to exist)
+        scopes: {
+            sca: ["user"],
+            mca: ["user"], //needed by mca
+            dicom: ["user"], //needed by dicom
+        },
+        gids: [ 1 ],
+    },
+
+    //isser to use for generated jwt token
+    iss: "https://brainlife.duckdns.org/auth",
+    //ttl for jwt
+    ttl: 24*3600*1000, //1 day
+    
+    public_key: fs.readFileSync(__dirname+'/auth.pub'),
+    private_key: fs.readFileSync(__dirname+'/auth.key'),
+    
+    //option for jwt.sign
+    sign_opt: {algorithm: 'RS256'},
+
+    //allow_signup: false, //prevent user from signing in (set false if not using local auth)
+};
+    
+exports.email_confirmation = {
+    //deprecated
+};
+
+//for user/pass login (you should use either local, or ldap - but not both)
+exports.local = {
+    //comment this out if you don't want to confirm email
+    email_confirmation: {
+        subject: 'Account Confirmation for brainlife.duckdns.org',
+        from: 'sporiley@indiana.edu',  //iu mail server will reject if this is non-repliable address/
+    },
+    email_passreset: {
+        subject: 'password reset instruction',
+        from: 'sporiley@indiana.edu',  //iu mail server will reject if this is non-repliable address/
+    },
+
+    //nodemailer config
+    mailer: {
+        host: 'mail-relay.iu.edu',
+        secure: true,
+        auth: {
+            user: 'sporiley',
+            pass: fs.readFileSync(__dirname+'/smtp.password', {encoding: 'ascii'}).trim(),
+        }
+    }
+};
+
+/*exports.ldap = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+    
+    //passport-ldap config
+    server: {
+        url: 'ldaps://ads.iu.edu:636',
+        bindDn: 'CN=sciaptad,OU=Accounts,DC=ads,DC=iu,DC=edu',
+        bindCredentials: fs.readFileSync(__dirname+'/ldap.password', {encoding: 'utf8'}).trim(),
+        searchBase: 'ou=Accounts,dc=ads,dc=iu,dc=edu',
+        searchFilter: '(sAMAccountName=\x7b\x7busername\x7d\x7d)'
+    }
+};
+
+exports.x509 = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+
+    //http header to look for x509 DN 
+    //for nginx set proxy_set_header DN $ssl_client_s_dn
+    //for apache, SSLOptions +StdEnvVars will set it to SSL_CLIENT_S_DN
+    dn_header: 'dn',
+    allow_origin: '*', 
+};
+
+//create a "project" at https://console.developers.google.com/apis/dashboard and configure
+//oauth credential
+exports.google = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+
+    client_id: "714649905668-v6fmqrrba6i2pfe7pq30brj602ng87ik.apps.googleusercontent.com",
+    client_secret: "ny8mrSbP3ZjmcxYdD-Aj2aMz",
+    callback_url: "https://brainlife.duckdns.org/api/auth/google/callback", //google api is very strict about this..
+};
+
+exports.github = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: true,
+
+    client_id: "1b4954b828f45bbd286b",
+    client_secret: "3a79e473da458229ff789c10d9a02fcb6bbda264",
+    callback_url: "https://brainlife.duckdns.org/api/auth/github/callback",
+};
+
+//register at https://developers.facebook.com/docs/facebook-login/web
+exports.facebook = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false,
+    
+    app_id: "1878618049037602",
+    app_secret: "78130a8a60f807b2ac1a93fb11cf49f4",
+    callback_url: "https://brainlife.duckdns.org/api/auth/facebook/callback",
+};
+
+//openid connect (cilogon)
+//http://www.cilogon.org/oidc
+//most info can be downloaded from https://cilogon.org/.well-known/openid-configuration
+exports.oidc = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: true, 
+
+    issuer: "https://cilogon.org",
+    authorization_url: "https://cilogon.org/authorize",
+    token_url: "https://cilogon.org/oauth2/token",
+    userinfo_url: "https://cilogon.org/oauth2/userinfo", //specific to openid connect
+
+    callback_url: "https://brainlife.duckdns.org/api/auth/oidc/callback",
+    //scope: "openid profile email org.cilogon.userinfo",
+
+    client_id: "myproxy:oa4mp,2012:/client_id/234dba466fc3dd2dd30e3414087e3c1b",
+    client_secret: "lDiGNgw5zLXcEXzQK1K8uM8kDYD_pLStYcIRKq-aH_OgOa2aJ9kJ95FkxbHhNardbBZUY7LhuFrMT7sYWwprVQ",
+
+    idplist: "https://cilogon.org/include/idplist.xml",
+};
+
+//for iucas login
+exports.iucas = {
+    //set to true if you want to auto register user account when user first login using this account
+    auto_register: false, 
+   
+    //url to redirect after successful iucas login (with ?jwt=<jwt>)
+    //you should take jwt, store it on localstorage, and redirect to wherever you want to go
+    //this is not the same thing as the ui/config.js -- default_redirect_url !!
+
+    //used for casurl, and also used to return to the auth page to display login error messages
+    //home_url: 'https://brainlife.duckdns.org/auth', //TODO not sure if this is still used
+};
+
+//register at https://orcid.org/developer-tools
+exports.orcid = {
+    auto_register: true,
+
+    authorization_url: "https://orcid.org/oauth/authorize",
+    token_url: "https://orcid.org/oauth/token",
+    
+    client_id: "APP-8TM9RWZMIT43M9TL",
+    client_secret: "4bc3d53b-dc63-471c-a689-2f8ae13245bc",
+    callback_url: "https://brainlife.duckdns.org/api/auth/orcid/callback",
+};
+*/
+exports.db = {
+    dialect: "sqlite", 
+    storage: "/home/sporiley/sqlite/auth.sqlite",
+    logging: false
+}
+
+exports.express = {
+    //web server port
+    port: 12000,
+};
+
+exports.logger = {
+    winston: {
+        //hide headers which may contain jwt
+        requestWhitelist: ['url', /*'headers',*/ 'method', 'httpVersion', 'originalUrl', 'query'],
+        transports: [
+            //display all logs to console
+            new winston.transports.Console({
+                timestamp: function() {
+                    var d = new Date();
+                    return d.toString(); //show timestamp
+                },
+                level: 'debug',
+                colorize: true
+            }),
+        ]
+    }
+}
+
