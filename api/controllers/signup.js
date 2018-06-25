@@ -83,7 +83,7 @@ router.post('/', jwt({secret: config.auth.public_key, credentialsRequired: false
                         if(!req.user) {
                             //if we fail to send email, we should unregister the user we just created
                             user.destroy({force: true}).then(function() {
-                                logger.error("removed newly registred record - email failurer");
+                                logger.error("removed newly registered record - email failure");
                                 res.status(500).json({message: "Failed to send confirmation email. Please make sure your email address is valid."});
                             });
                         } else {

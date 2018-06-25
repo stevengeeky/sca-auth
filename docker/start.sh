@@ -16,7 +16,7 @@ fi
 if [ ! -f /app/api/config/user.jwt ]; then
     (
     echo "generating user.jwt"
-    node /app/bin/auth.js issue --scopes '{"common":["user"]}' --sub sca --out user.jwt
+    node /app/bin/auth.js issue --scopes '{"common":["user"]}' --sub sca --out /app/api/config/user.jwt
     chmod 600 user.jwt
     )
 fi
