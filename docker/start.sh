@@ -10,6 +10,11 @@ if [ ! -f /app/api/config/auth.key ]; then
     chmod 600 auth.key
     openssl rsa -in auth.key -pubout > auth.pub
 
+    )
+fi
+
+if [ ! -f /app/api/config/user.jwt ]; then
+    (
     echo "generating user.jwt"
     node /app/bin/auth.js issue --scopes '{"common":["user"]}' --sub sca --out user.jwt
     chmod 600 user.jwt
