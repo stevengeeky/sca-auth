@@ -18,6 +18,8 @@ var config = require('../api/config');
 var logger = new winston.Logger(config.logger.winston);
 var db = require('../api/models');
 
+const shortListCols = [ "id", "active", "username", "email", "fullname" ];
+
 switch(argv._[0]) {
 case "modscope": modscope(); break;
 case "listuser": listuser(); break;
@@ -33,6 +35,19 @@ function listuser() {
     db.User.findAll({/*attributes: ['id', 'username', 'email', 'active', 'scopes', 'times', 'createdAt'],*/ raw: true})
     .then(function(users) {
         console.dir(users);
+        if ( ! argv.short ) {
+            console.dir(users);
+        } else {
+            console.log( shortListCols.join("\t") );
+            //console.log(columns);
+            _.map(users, function(user) {
+                var row = [];
+                _.each( shortListCols, function(col) {
+                    row.push(user[col]);
+                });
+                console.log(row.join("\t"));
+            });
+        }
     }); 
 }
 
@@ -186,20 +201,38 @@ function useradd() {
         process.exit(1);
     }
 
-    var user = db.User.build(
-        //extend from default
-        Object.assign({
-            username: argv.username,
-            fullname: argv.fullname,
-            email: argv.email,
-            email_confirmed: true,
-        }, config.auth.default)
-    );
-    user.save().then(function(_user) {
-        if(!_user) return logger.error("couldn't register new user");
-        logger.info("successfully created a user");
-        if(argv.password) setpass();
-        else logger.info("you might want to reset password / setscope");
+    // Check whether username/email already exist
+    // Theoretically sequelize should prevent dupes, but that constraint is
+    // not working
+    var userExists = false;
+    db.User.findOne({where: { 
+        $or: [
+            {username: argv.username}, 
+            {email: argv.email}, 
+        ]} 
+    }).then(function(user) {        
+        if ( user ) userExists = true;
+
+        if ( userExists ) {
+            logger.error("username and email must be unique");
+            process.exit(1);
+        }
+
+        var user = db.User.build(
+            //extend from default
+            Object.assign({
+                username: argv.username,
+                fullname: argv.fullname,
+                email: argv.email,
+                email_confirmed: true,
+            }, config.auth.default)
+            );
+        user.save().then(function(_user) {
+            if(!_user) return logger.error("couldn't register new user");
+            logger.info("successfully created a user");
+            if(argv.password) setpass();
+            else logger.info("you might want to reset password / setscope");
+        });
     });
 }
 

@@ -3,6 +3,9 @@ Usage:
 * List Users
 ./auth.js listuser 
 
+* Short Listing
+./auth.js listuser --short
+
 * register new user
 ./auth.js useradd --username hayashis --fullname "Soichi Hayashi" --email "hayashis@iu.edu" [--password "password4it"]
 

@@ -13,7 +13,7 @@ var logger = new winston.Logger(config.logger.winston);
 
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('User', {
-        
+
         ///////////////////////////////////////////////////////////////////////////////////////////
         //always filled (really?)
         username: {type: Sequelize.STRING, unique: 'true'},
@@ -31,7 +31,7 @@ module.exports = function(sequelize, DataTypes) {
         password_reset_token: Sequelize.STRING, //used to reset password (via email?)
         password_reset_cookie: Sequelize.STRING, //cookie token allowed to do reset
         //password_reset_exp: Sequelize.DATE,
-        
+
         ///////////////////////////////////////////////////////////////////////////////////////////
         //for 3rd party login (TODO - should I store all this in JSON fields?)
         iucas: Sequelize.STRING,
@@ -49,7 +49,7 @@ module.exports = function(sequelize, DataTypes) {
         //
         times: JsonField(sequelize, 'User', 'times'),
         scopes: JsonField(sequelize, 'User', 'scopes'),
-        
+
         //prevent user from loggin in (usually temporarily)
         active: { type: Sequelize.BOOLEAN, defaultValue: true } 
     }, {
@@ -119,3 +119,4 @@ module.exports = function(sequelize, DataTypes) {
         }
     });
 }
+
