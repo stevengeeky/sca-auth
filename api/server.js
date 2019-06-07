@@ -1,7 +1,10 @@
 #!/usr/bin/node
 
-const fs = require('fs');
-const path = require('path');
+const pwaConfig = require('./pwa-config');
+const config = pwaConfig.getConfig();
+
+console.log("CONFIG FROM pwaConfig", config);
+
 const express = require('express');
 const cookieParser = require('cookie-parser'); //google auth uses this
 const bodyParser = require('body-parser');
@@ -11,7 +14,6 @@ const winston = require('winston');
 const expressWinston = require('express-winston');
 const cors = require('cors');
 
-const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
 const migration = require('./migration');

@@ -8,7 +8,8 @@ const winston = require('winston');
 const jwt = require('express-jwt');
 
 //mine
-const config = require('../config');
+const pwaConfig = require('../pwa-config');
+const config = pwaConfig.getConfig();
 const logger = new winston.Logger(config.logger.winston);
 const common = require('../common');
 const db = require('../models');

@@ -1,6 +1,6 @@
 PACKAGE=perfsonar-psconfig-web-admin-auth
 ROOTPATH=/usr/lib/perfsonar/psconfig-web-admin/auth
-CONFIGPATH=${ROOTPATH}/etc
+CONFIGPATH=/etc/perfsonar/psconfig-web
 #LIBPATH=/usr/lib/perfsonar/lib
 #GRAPHLIBPATH=/usr/lib/perfsonar/psconfig-web/lib
 PERFSONAR_AUTO_VERSION=4.1.6
@@ -18,12 +18,6 @@ dist:
 	tar czf $(PACKAGE)-$(VERSION).$(RELEASE).tar.gz -C /tmp $(PACKAGE)-$(VERSION).$(RELEASE)
 	rm -rf /tmp/$(PACKAGE)-$(VERSION).$(RELEASE)
 	cp $(PACKAGE)-$(VERSION).$(RELEASE).tar.gz ~/rpmbuild/SOURCES/
-	## PUB PACKAGE
-	#mkdir /tmp/$(PUB_PACKAGE)-$(VERSION).$(RELEASE)
-	#tar ch -T MANIFEST_PUB | tar x -C /tmp/$(PUB_PACKAGE)-$(VERSION).$(RELEASE)
-	#tar czf $(PUB_PACKAGE)-$(VERSION).$(RELEASE).tar.gz -C /tmp $(PUB_PACKAGE)-$(VERSION).$(RELEASE)
-	#rm -rf /tmp/$(PUB_PACKAGE)-$(VERSION).$(RELEASE)
-	#cp $(PUB_PACKAGE)-$(VERSION).$(RELEASE).tar.gz ~/rpmbuild/SOURCES/
 
 manifest:
 	find ./node_modules -type f > MANIFEST-node_modules
@@ -45,10 +39,6 @@ install:
 	#sed -i 's:.RealBin/\.\./lib:${LIBPATH}:g' ${ROOTPATH}/cgi-bin/*
 	#sed -i 's:.RealBin/lib:${GRAPHLIBPATH}:g' ${ROOTPATH}/cgi-bin/*
 
-#	# PUB PACKAGE
-#	tar ch --exclude=etc/* --exclude=*spec --exclude=dependencies --exclude=MANIFEST_PUB --exclude=LICENSE --exclude=Makefile -T MANIFEST_PUB | tar x -C ${ROOTPATH}
-#	for i in `cat MANIFEST_PUB | grep ^etc/ | sed "s/^etc\///"`; do  mkdir -p `dirname $(CONFIGPATH)/$${i}`; if [ -e $(CONFIGPATH)/$${i} ]; then install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}.new; else install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}; fi; done
-#
 rpm:
 	make auth
 
@@ -58,11 +48,11 @@ auth:
 
 clean:
 	rm -f perfsonar-psconfig*.tar.gz
-	rm -rf ~/rpmbuild/RPMS/* ~/rpmbuild/BUILD/* ~/rpmbuild/BUILDROOT/* ~/rpmbuild/SOURCES/* ~/rpmbuild/SRPMS ~/rpmbuild/SPECS
-	rm -f MANIFEST-node_modules
-	rm -f MANIFEST-ui-node_modules
-	rm -rf node_modules
-	rm -rf ui/node_modules
+	rm -rf ~/rpmbuild/RPMS/x86_64/perfsonar-psconfig-web-admin-auth*.rpm ~/rpmbuild/BUILD/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/BUILDROOT/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SOURCES/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SRPMS/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SPECS/perfsonar-psconfig-web-admin-auth/*
+	#rm -f MANIFEST-node_modules
+	#rm -f MANIFEST-ui-node_modules
+	#rm -rf node_modules
+	#rm -rf ui/node_modules
 	#rm -f ui/dist/pwa-admin-ui-bundle.js
 
 # These tests will have to be done differently, since this project uses nodejs instead of perl

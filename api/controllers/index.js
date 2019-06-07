@@ -6,7 +6,8 @@ var router = express.Router();
 var jwt = require('express-jwt');
 
 //mine
-var config = require('../config');
+const pwaConfig = require('../pwa-config');
+const config = pwaConfig.getConfig();
 
 router.use('/', require('./root'));
 

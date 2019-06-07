@@ -1,6 +1,5 @@
 %define install_base /usr/lib/perfsonar/psconfig-web-admin/auth
-%define config_base %{install_base}/etc/pwa
-#%define config_base /etc/pwa
+%define config_base %{install_base}/etc/perfsonar/psconfig-web
 %define systemd_base /usr/lib/systemd/system
 # cron/apache entries are located in the 'etc' directory
 %define apache_base /etc/httpd/conf.d
@@ -74,6 +73,7 @@ rm -rf %{buildroot}/%{install_base}/
 #mkdir -p %{buildroot}/%{install_base}/dist
 mkdir -p %{buildroot}/%{systemd_base}
 mkdir -p %{buildroot}/%{install_base}/bin
+mkdir -p %{buildroot}/%{install_base}/config
 mkdir -p %{buildroot}/%{install_base}/api/config
 mkdir -p %{buildroot}/%{install_base}/api/models
 mkdir -p %{buildroot}/%{install_base}/api/controllers
@@ -83,7 +83,7 @@ mkdir -p %{buildroot}/%{install_base}/ui/css
 mkdir -p %{buildroot}/%{install_base}/ui/js
 mkdir -p %{buildroot}/%{install_base}/ui/t
 mkdir -p %{buildroot}/%{install_base}/ui/images
-
+mkdir -p %{buildroot}/etc/perfsonar/psconfig-web/auth
 
 cp -R node_modules/*     %{buildroot}/%{install_base}/node_modules
 cp -R ui/node_modules/*  %{buildroot}/%{install_base}/ui/node_modules
@@ -113,7 +113,8 @@ install -D -m 0644 bin/usage.txt %{buildroot}/%{install_base}/bin
 install -D -m 0644 bin/genkey.sh %{buildroot}/%{install_base}/bin
 
 # api/config files
-install -D -m 0644 api/config/index.js.sample %{buildroot}/%{install_base}/api/config/index.js.sample
+install -D -m 0644 etc/auth/index.js.sample %{buildroot}/etc/perfsonar/psconfig-web/auth/index.js
+#install -D -m 0644 config/default.json %{buildroot}/%{install_base}/config/default.json
 
 # api files
 install -D -m 0644 api/*.js %{buildroot}/%{install_base}/api/
@@ -148,6 +149,7 @@ service httpd restart &> /dev/null || :
 %license LICENSE
 #%config /etc/pwa/index.js
 #%config /etc/pwa/shared/*
+%config /etc/perfsonar/psconfig-web/auth/index.js
 %config %{apache_base}/pwa-auth.conf
 %config %{systemd_base}/perfsonar-psconfig-web-admin-auth.service
 #%config %{install_base}/deploy/*
@@ -160,7 +162,8 @@ service httpd restart &> /dev/null || :
 %{install_base}/ui/js/*
 %{install_base}/ui/css/*
 %{install_base}/bin/*
-%{install_base}/api/config/index.js.sample
+#%{install_base}/config/default.json
+#%{install_base}/api/config/index.js.sample
 #%{install_base}/ui/dist/*
 #%{install_base}/shared/*
 %{install_base}/api/*.js

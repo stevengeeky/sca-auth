@@ -4,13 +4,13 @@ MANIFEST-node_modules
 MANIFEST-ui-node_modules
 Makefile
 etc/apache/pwa-auth.conf
+etc/auth/index.js.sample
 deploy/systemd/perfsonar-psconfig-web-admin-auth.service
 bin/auth.js
 bin/usage.txt
 bin/genkey.sh
 api/auth.js
 api/common.js
-api/config/index.js.sample
 api/controllers/facebook.js
 api/controllers/github.js
 api/controllers/google.js

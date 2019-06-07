@@ -5,7 +5,8 @@ const nodemailer = require('nodemailer');
 const uuid = require('node-uuid');
 const winston = require('winston');
 
-const config = require('./config');
+const pwaConfig = require('./pwa-config');
+const config = pwaConfig.getConfig();
 const logger = new winston.Logger(config.logger.winston);
 
 exports.createClaim = function(user, cb) {
