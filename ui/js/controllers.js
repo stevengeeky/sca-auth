@@ -99,7 +99,7 @@ function handle_redirect() {
     var redirect = sessionStorage.getItem('auth_redirect');
     sessionStorage.removeItem('auth_redirect');
     //window.location = redirect||document.referrer||$scope.appconf.default_redirect_url; 
-    window.location = redirect||"/";
+    window.location = redirect||"/pwa/";
 }
 
 //used by oauth2 callbacks (github, etc..) to set the jwt and redirect

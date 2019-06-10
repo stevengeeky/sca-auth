@@ -3,7 +3,7 @@
 %define systemd_base /usr/lib/systemd/system
 # cron/apache entries are located in the 'etc' directory
 %define apache_base /etc/httpd/conf.d
-%define apacheconf pwa-auth.conf
+%define apacheconf pwa-0auth.conf
 
 %define perfsonar_auto_version 4.1.6
 %define perfsonar_auto_relnum 1
@@ -92,7 +92,7 @@ cp -R ui/node_modules/*  %{buildroot}/%{install_base}/ui/node_modules
 
 #install -D -m 0644 etc/index.js %{buildroot}/etc/pwa/index.js
 
-install -D -m 0644  etc/apache/pwa-auth.conf %{buildroot}/%{apache_base}/pwa-auth.conf
+install -D -m 0644  etc/apache/pwa-0auth.conf %{buildroot}/%{apache_base}/pwa-0auth.conf
 
 #install -D -m 0644  etc/apache/pwa-admin.conf %{buildroot}/etc/pwa/apache
 
@@ -150,7 +150,7 @@ service httpd restart &> /dev/null || :
 #%config /etc/pwa/index.js
 #%config /etc/pwa/shared/*
 %config /etc/perfsonar/psconfig-web/auth/index.js
-%config %{apache_base}/pwa-auth.conf
+%config %{apache_base}/pwa-0auth.conf
 %config %{systemd_base}/perfsonar-psconfig-web-admin-auth.service
 #%config %{install_base}/deploy/*
 #%{install_base}/cgi-bin/*

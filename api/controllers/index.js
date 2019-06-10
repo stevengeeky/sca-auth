@@ -9,6 +9,7 @@ var jwt = require('express-jwt');
 const pwaConfig = require('../pwa-config');
 const config = pwaConfig.getConfig();
 
+//router.use('/pwa/', require('./root'));
 router.use('/', require('./root'));
 
 if(config.auth.allow_signup !== false) {
