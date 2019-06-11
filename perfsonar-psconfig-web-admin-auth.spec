@@ -141,7 +141,7 @@ chown perfsonar:perfsonar /var/log/perfsonar
 chown -R perfsonar:perfsonar %{install_base}
 #chown -R apache:apache %{install_base}/etc/apache
 chown -R apache:apache %{apache_base}
-
+ln -s /etc/perfsonar/psconfig-web/shared/auth.ui.js  /usr/lib/perfsonar/psconfig-web/auth/ui/config.js
 service httpd restart &> /dev/null || :
 
 %files
