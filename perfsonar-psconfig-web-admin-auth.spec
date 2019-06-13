@@ -138,10 +138,12 @@ rm -rf %{buildroot}
 %post
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
+mkdir -p /var/lib/perfsonar/psconfig-web/auth
+chown perfsonar:perfsonar /var/lib/perfsonar/psconfig-web/auth
 chown -R perfsonar:perfsonar %{install_base}
 #chown -R apache:apache %{install_base}/etc/apache
 chown -R apache:apache %{apache_base}
-ln -s /etc/perfsonar/psconfig-web/shared/auth.ui.js  /usr/lib/perfsonar/psconfig-web/auth/ui/config.js
+ln -sf /etc/perfsonar/psconfig-web/shared/auth.ui.js  /usr/lib/perfsonar/psconfig-web-admin/auth/ui/config.js
 service httpd restart &> /dev/null || :
 
 %files

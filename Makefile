@@ -49,11 +49,12 @@ auth:
 clean:
 	rm -f perfsonar-psconfig*.tar.gz
 	rm -rf ~/rpmbuild/RPMS/x86_64/perfsonar-psconfig-web-admin-auth*.rpm ~/rpmbuild/BUILD/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/BUILDROOT/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SOURCES/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SRPMS/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SPECS/perfsonar-psconfig-web-admin-auth/*
-	#rm -f MANIFEST-node_modules
-	#rm -f MANIFEST-ui-node_modules
-	#rm -rf node_modules
-	#rm -rf ui/node_modules
-	#rm -f ui/dist/pwa-admin-ui-bundle.js
+
+npm_clean:
+	rm -f MANIFEST-node_modules
+	rm -f MANIFEST-ui-node_modules
+	rm -rf node_modules
+	rm -rf ui/node_modules
 
 # These tests will have to be done differently, since this project uses nodejs instead of perl
 
