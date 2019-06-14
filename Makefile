@@ -20,7 +20,7 @@ dist:
 	cp $(PACKAGE)-$(VERSION).$(RELEASE).tar.gz ~/rpmbuild/SOURCES/
 
 manifest:
-	find ./node_modules -type f > MANIFEST-node_modules
+	find node_modules -type f > MANIFEST-node_modules
 	# add UI node modules, ignoring a few large folders. optimize this later
 	find ui/node_modules -type f | grep -v bootswatch/docs | grep -v ace-builds > MANIFEST-ui-node_modules
 
