@@ -84,6 +84,7 @@ mkdir -p %{buildroot}/%{install_base}/ui/js
 mkdir -p %{buildroot}/%{install_base}/ui/t
 mkdir -p %{buildroot}/%{install_base}/ui/images
 mkdir -p %{buildroot}/etc/perfsonar/psconfig-web/auth
+mkdir -p %{buildroot}/etc/perfsonar/psconfig-web/shared
 
 cp -R node_modules/*     %{buildroot}/%{install_base}/node_modules
 cp -R ui/node_modules/*  %{buildroot}/%{install_base}/ui/node_modules
@@ -114,7 +115,8 @@ install -D -m 0644 bin/genkey.sh %{buildroot}/%{install_base}/bin
 
 # api/config files
 install -D -m 0644 etc/auth/index.js.sample %{buildroot}/etc/perfsonar/psconfig-web/auth/index.js
-#install -D -m 0644 config/default.json %{buildroot}/%{install_base}/config/default.json
+install -D -m 0644 etc/shared/auth.ui.js %{buildroot}/etc/perfsonar/psconfig-web/shared/auth.ui.js
+install -D -m 0644 config/default.json %{buildroot}/%{install_base}/config/default.json
 
 # api files
 install -D -m 0644 api/*.js %{buildroot}/%{install_base}/api/
@@ -138,12 +140,14 @@ rm -rf %{buildroot}
 %post
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
-mkdir -p /var/lib/perfsonar/psconfig-web/auth
 chown perfsonar:perfsonar /var/lib/perfsonar/psconfig-web/auth
 chown -R perfsonar:perfsonar %{install_base}
 #chown -R apache:apache %{install_base}/etc/apache
 chown -R apache:apache %{apache_base}
+
+mkdir -p /usr/lib/perfsonar/psconfig-web-admin/auth/api/config
 ln -sf /etc/perfsonar/psconfig-web/shared/auth.ui.js  /usr/lib/perfsonar/psconfig-web-admin/auth/ui/config.js
+ln -sf /etc/perfsonar/psconfig-web/auth/index.js /usr/lib/perfsonar/psconfig-web-admin/auth/api/config/index.js 
 service httpd restart &> /dev/null || :
 
 %files
@@ -152,8 +156,10 @@ service httpd restart &> /dev/null || :
 #%config /etc/pwa/index.js
 #%config /etc/pwa/shared/*
 %config /etc/perfsonar/psconfig-web/auth/index.js
+%config /etc/perfsonar/psconfig-web/shared/auth.ui.js
 %config %{apache_base}/pwa-0auth.conf
 %config %{systemd_base}/perfsonar-psconfig-web-admin-auth.service
+%config %{install_base}/config/default.json
 #%config %{install_base}/deploy/*
 #%{install_base}/cgi-bin/*
 %{install_base}/node_modules/*
@@ -164,7 +170,6 @@ service httpd restart &> /dev/null || :
 %{install_base}/ui/js/*
 %{install_base}/ui/css/*
 %{install_base}/bin/*
-#%{install_base}/config/default.json
 #%{install_base}/api/config/index.js.sample
 #%{install_base}/ui/dist/*
 #%{install_base}/shared/*
