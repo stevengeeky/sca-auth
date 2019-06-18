@@ -7,6 +7,7 @@
 
 %define perfsonar_auto_version 4.1.6
 %define perfsonar_auto_relnum 1
+%define debug_package %{nil}
 
 Name:			perfsonar-psconfig-web-admin-auth
 Version:		%{perfsonar_auto_version}
@@ -141,14 +142,15 @@ rm -rf %{buildroot}
 %post
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
-chown perfsonar:perfsonar /var/lib/perfsonar/psconfig-web/auth
+mkdir -p /var/lib/perfsonar/psconfig-web-admin/auth
+chown perfsonar:perfsonar /var/lib/perfsonar/psconfig-web-admin/auth
 chown -R perfsonar:perfsonar %{install_base}
 #chown -R apache:apache %{install_base}/etc/apache
 chown -R apache:apache %{apache_base}
 
 mkdir -p /usr/lib/perfsonar/psconfig-web-admin/auth/api/config
 ln -sf /etc/perfsonar/psconfig-web/shared/auth.ui.js  /usr/lib/perfsonar/psconfig-web-admin/auth/ui/config.js
-ln -sf /etc/perfsonar/psconfig-web/auth/index.js /usr/lib/perfsonar/psconfig-web-admin/auth/api/config/index.js 
+ln -sf /etc/perfsonar/psconfig-web/auth/index.js /usr/lib/perfsonar/psconfig-web-admin/auth/api/config/index.js
 service httpd restart &> /dev/null || :
 
 %files

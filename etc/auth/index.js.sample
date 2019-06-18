@@ -111,7 +111,7 @@ exports.x509 = {
 
 exports.db = {
     dialect: "sqlite",
-    storage: "/var/lib/perfsonar/psconfig-web/auth/auth.sqlite",
+    storage: "/var/lib/perfsonar/psconfig-web-admin/auth/auth.sqlite",
     logging: false
 }
 
