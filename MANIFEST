@@ -11,6 +11,7 @@ deploy/systemd/perfsonar-psconfig-web-admin-auth.service
 bin/auth.js
 bin/usage.txt
 bin/genkey.sh
+bin/pwa_gen_keys.sh
 api/auth.js
 api/common.js
 api/controllers/facebook.js

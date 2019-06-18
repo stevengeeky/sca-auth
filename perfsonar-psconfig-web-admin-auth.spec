@@ -109,9 +109,10 @@ install -D -m 0644  etc/apache/pwa-0auth.conf %{buildroot}/%{apache_base}/pwa-0a
 install -D -m 0644 deploy/systemd/perfsonar-psconfig-web-admin-auth.service %{buildroot}/%{systemd_base}
 
 # bin/ files
-install -D -m 0644 bin/auth.js   %{buildroot}/%{install_base}/bin
+install -D -m 0755 bin/auth.js   %{buildroot}/%{install_base}/bin
 install -D -m 0644 bin/usage.txt %{buildroot}/%{install_base}/bin
-install -D -m 0644 bin/genkey.sh %{buildroot}/%{install_base}/bin
+install -D -m 0755 bin/genkey.sh %{buildroot}/%{install_base}/bin
+install -D -m 0755 bin/pwa_gen_keys.sh %{buildroot}/%{install_base}/bin
 
 # api/config files
 install -D -m 0644 etc/auth/index.js.sample %{buildroot}/etc/perfsonar/psconfig-web/auth/index.js
