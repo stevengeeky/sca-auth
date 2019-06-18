@@ -1,0 +1,17 @@
+[Unit]
+Description=perfSONAR PWA Authentication API daemon
+After=network.target
+Wants=mongod.service
+
+[Service]
+User=perfsonar
+Environment=NODE_PATH=/usr/lib/perfsonar/psconfig-web-admin/auth/node_modules
+Environment=NODE_CONFIG_DIR=/etc/perfsonar/psconfig-web
+WorkingDirectory=/usr/lib/perfsonar/psconfig-web-admin/auth
+ExecStart=/usr/bin/node api/auth.js
+#NODE_CONFIG_DIR=/etc/perfsonar/psconfig-web NODE_PATH=/usr/lib/perfsonar/psconfig-web-admin/auth/node_modules node api/auth.js
+Restart=on-failure
+
+
+[Install]
+WantedBy=multi-user.target

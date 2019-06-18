@@ -6,7 +6,8 @@ var Promise = require('promise');
 var Sequelize = require('sequelize');
 
 //mine
-var config = require('./config');
+const pwaConfig = require('./pwa-config');
+const config = pwaConfig.getConfig();
 var logger = new winston.Logger(config.logger.winston);
 var db = require('./models');
 
