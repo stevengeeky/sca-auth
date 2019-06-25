@@ -1,9 +1,6 @@
 #!/usr/bin/node
 
-const pwaConfig = require('./pwa-config');
-const config = pwaConfig.getConfig();
-
-console.log("CONFIG FROM pwaConfig", config);
+const config = require('./config');
 
 const express = require('express');
 const cookieParser = require('cookie-parser'); //google auth uses this

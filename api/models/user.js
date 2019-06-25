@@ -8,8 +8,7 @@ var winston = require('winston');
 var async = require('async');
 
 //mine
-const pwaConfig = require('../pwa-config');
-const config = pwaConfig.getConfig();
+const config = require('../config');
 var logger = new winston.Logger(config.logger.winston);
 
 module.exports = function(sequelize, DataTypes) {

@@ -151,6 +151,9 @@ chown -R apache:apache %{apache_base}
 mkdir -p /usr/lib/perfsonar/psconfig-web-admin/auth/api/config
 ln -sf /etc/perfsonar/psconfig-web/shared/auth.ui.js  /usr/lib/perfsonar/psconfig-web-admin/auth/ui/config.js
 ln -sf /etc/perfsonar/psconfig-web/auth/index.js /usr/lib/perfsonar/psconfig-web-admin/auth/api/config/index.js
+
+/usr/lib/perfsonar/psconfig-web-admin/auth/bin/pwa_gen_keys.sh
+
 service httpd restart &> /dev/null || :
 
 %files

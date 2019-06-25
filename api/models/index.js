@@ -8,8 +8,11 @@ var path      = require('path');
 var Sequelize = require('sequelize');
 
 //mine
-const pwaConfig = require('../pwa-config');
-const config = pwaConfig.getConfig();
+//const pwaConfig = require('../pwa-config');
+//const config = pwaConfig.getConfig();
+const config = require('../config');
+
+console.log("config", config);
 
 var basename  = path.basename(module.filename);
 
