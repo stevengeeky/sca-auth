@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+export NODE_PATH=/usr/lib/perfsonar/psconfig-web-admin/auth/node_modules
+node /usr/lib/perfsonar/psconfig-web-admin/auth/bin/auth.js "$@"

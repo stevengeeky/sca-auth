@@ -8,6 +8,7 @@ etc/apache/pwa-0auth.conf
 etc/auth/index.js.sample
 etc/shared/auth.ui.js
 deploy/systemd/perfsonar-psconfig-web-admin-auth.service
+sbin/pwa_auth
 bin/auth.js
 bin/usage.txt
 bin/genkey.sh

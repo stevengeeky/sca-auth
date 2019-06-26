@@ -1,6 +1,7 @@
 %define install_base /usr/lib/perfsonar/psconfig-web-admin/auth
 %define config_base %{install_base}/etc/perfsonar/psconfig-web
 %define systemd_base /usr/lib/systemd/system
+%define sbin_base /usr/sbin
 # cron/apache entries are located in the 'etc' directory
 %define apache_base /etc/httpd/conf.d
 %define apacheconf pwa-0auth.conf
@@ -64,6 +65,7 @@ make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base
 rm -rf %{buildroot}/etc/pwa/apache/%{apacheconf}
 
 rm -rf %{buildroot}/%{install_base}/
+rm -rf %{buildroot}/%{sbin_base}/
 
 #mkdir -p %{buildroot}/etc/httpd/conf.d
 #mkdir -p %{buildroot}/etc/apache
@@ -73,8 +75,9 @@ rm -rf %{buildroot}/%{install_base}/
 #mkdir -p %{buildroot}/%{install_base}/shared
 #mkdir -p %{buildroot}/%{install_base}/dist
 mkdir -p %{buildroot}/%{systemd_base}
+mkdir -p %{buildroot}/%{sbin_base}
 mkdir -p %{buildroot}/%{install_base}/bin
-mkdir -p %{buildroot}/%{install_base}/config
+#mkdir -p %{buildroot}/%{install_base}/config
 mkdir -p %{buildroot}/%{install_base}/api/config
 mkdir -p %{buildroot}/%{install_base}/api/models
 mkdir -p %{buildroot}/%{install_base}/api/controllers
@@ -115,10 +118,12 @@ install -D -m 0644 bin/usage.txt %{buildroot}/%{install_base}/bin
 install -D -m 0755 bin/genkey.sh %{buildroot}/%{install_base}/bin
 install -D -m 0755 bin/pwa_gen_keys.sh %{buildroot}/%{install_base}/bin
 
+# sbin/ files
+install -D -m 0755 sbin/pwa_auth   %{buildroot}/%{sbin_base}/pwa_auth
+
 # api/config files
 install -D -m 0644 etc/auth/index.js.sample %{buildroot}/etc/perfsonar/psconfig-web/auth/index.js
 install -D -m 0644 etc/shared/auth.ui.js %{buildroot}/etc/perfsonar/psconfig-web/shared/auth.ui.js
-install -D -m 0644 config/default.json %{buildroot}/%{install_base}/config/default.json
 
 # api files
 install -D -m 0644 api/*.js %{buildroot}/%{install_base}/api/
@@ -165,9 +170,7 @@ service httpd restart &> /dev/null || :
 %config /etc/perfsonar/psconfig-web/shared/auth.ui.js
 %config %{apache_base}/pwa-0auth.conf
 %config %{systemd_base}/perfsonar-psconfig-web-admin-auth.service
-%config %{install_base}/config/default.json
-#%config %{install_base}/deploy/*
-#%{install_base}/cgi-bin/*
+%{sbin_base}/pwa_auth
 %{install_base}/node_modules/*
 %{install_base}/ui/node_modules/*
 %{install_base}/ui/*
@@ -176,7 +179,6 @@ service httpd restart &> /dev/null || :
 %{install_base}/ui/js/*
 %{install_base}/ui/css/*
 %{install_base}/bin/*
-#%{install_base}/api/config/index.js.sample
 #%{install_base}/ui/dist/*
 #%{install_base}/shared/*
 %{install_base}/api/*.js
