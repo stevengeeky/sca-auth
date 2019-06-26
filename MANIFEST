@@ -32,7 +32,6 @@ api/models/group.js
 api/models/index.js
 api/models/migration.js
 api/models/user.js
-api/pwa-config.js
 api/server.js
 api/start.sh
 bin/auth.js

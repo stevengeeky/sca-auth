@@ -13,3 +13,4 @@ coverage
 docker/config
 docker/db
 .*.swp
+.*.swo

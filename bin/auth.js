@@ -15,12 +15,6 @@ var jwt = require('jsonwebtoken');
 var fs = require('fs');
 var _ = require('underscore');
 
-//mine
-//var pwaConfig = require('../api/pwa-config');
-//console.log("pawCONFIG", pwaConfig);
-//var config = pwaConfig.getConfig();
-
-//console.log("CONFIG FROM pwaConfig", config);
 var logger = new winston.Logger(config.logger.winston);
 var db = require('../api/models');
 
@@ -40,7 +34,7 @@ default:
 function listuser() {
     db.User.findAll({/*attributes: ['id', 'username', 'email', 'active', 'scopes', 'times', 'createdAt'],*/ raw: true})
     .then(function(users) {
-            console.dir(users);
+            //console.dir(users);
             if ( ! argv.short ) {
                 console.dir(users);
             } else {
@@ -74,7 +68,7 @@ function listuser() {
         if(argv.profile) {
             claim.profile = JSON.parse(argv.profile);
         }
-        
+
         if(argv.exp) {
             claim.exp = argv.exp;
         }
@@ -175,11 +169,11 @@ function listuser() {
             process.exit(1);
         }
 
-        db.User.findOne({where: { 
+        db.User.findOne({where: {
             $or: [
-                {username: argv.username}, 
-                {id: argv.id}, 
-            ]} 
+                {username: argv.username},
+                {id: argv.id},
+            ]}
         }).then(function(user) {
             if(!user) return logger.error("can't find user:"+argv.username);
             user.setPassword(argv.password, function(err) {

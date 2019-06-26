@@ -6,8 +6,6 @@ var winston = require('winston');
 
 //mine
 const config = require('../config');
-//const pwaConfig = require('../pwa-config');
-//const config = pwaConfig.getConfig();
 
 var logger = new winston.Logger(config.logger.winston);
 
