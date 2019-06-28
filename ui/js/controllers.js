@@ -20,7 +20,7 @@ function($scope, $route, toaster, $http, $routeParams, $location, scaMessage, $s
     function handle_success(res) {
         localStorage.setItem($scope.appconf.jwt_id, res.data.jwt);
         $rootScope.$broadcast("jwt_update", res.data.jwt)
-        handle_redirect();
+        handle_redirect($scope);
     }
 
     function handle_error(res) {
@@ -95,11 +95,21 @@ function($scope, $route, toaster, $http, $routeParams, $location, scaMessage, $s
     }
 });
 
-function handle_redirect() {
+function handle_redirect($scope) {
+    console.log("scope.appconf", $scope.appconf);
     var redirect = sessionStorage.getItem('auth_redirect');
     sessionStorage.removeItem('auth_redirect');
-    //window.location = redirect||document.referrer||$scope.appconf.default_redirect_url; 
-    window.location = redirect||"/pwa/";
+    var default_url = $scope.appconf.default_redirect_url;
+    if (typeof default_url == "undefined" ) {
+        console.log("setting default redirect url to '/'");
+        default_url = "/"
+    }
+    var referrer;
+    if ( document.referrer != "" ) {
+        referrer = document.referrer;
+    }
+    window.location = redirect||document.referrer||default_url;
+    //window.location = redirect||"/pwa/";
 }
 
 //used by oauth2 callbacks (github, etc..) to set the jwt and redirect
@@ -109,7 +119,7 @@ function($scope, $route, $http, $routeParams, $location, scaMessage, $sce, $root
     scaMessage.success("Welcome back!");
     localStorage.setItem($scope.appconf.jwt_id, $routeParams.jwt);
     $rootScope.$broadcast("jwt_update", $routeParams.jwt);
-    handle_redirect();
+    handle_redirect($scope);
 });
 
 app.controller('SignoutController', 
@@ -162,7 +172,7 @@ function($scope, $route, toaster, $http, $routeParams, scaMessage, $location, $r
 
                 //redirect to somewhere..
                 if(res.data.path) $location.path(res.data.path); //maybe .. email_confirmation
-                else handle_redirect();
+                else handle_redirect($scope);
             }, function(res) {
                 if(res.data && res.data.message) toaster.error(res.data.message);
                 else toaster.error(res.statusText);
