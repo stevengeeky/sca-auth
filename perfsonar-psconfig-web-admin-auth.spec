@@ -24,7 +24,6 @@ Requires:       nodejs
 Requires:		httpd
 Requires:       mod_ssl
 Requires:       sqlite
-#Requires:       perfsonar-psconfig-web-admin-shared
 
 # Disable dtrace dependency, which rpm thinks is broken for some reason.
 %global __requires_exclude dtrace
