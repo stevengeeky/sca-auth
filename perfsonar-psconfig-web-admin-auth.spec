@@ -118,7 +118,10 @@ ln -sf /etc/perfsonar/psconfig-web/auth/index.js /usr/lib/perfsonar/psconfig-web
 
 /usr/lib/perfsonar/psconfig-web-admin/auth/bin/pwa_gen_keys.sh
 
-service httpd restart &> /dev/null || :
+systemctl enable perfsonar-psconfig-web-admin-auth.service
+systemctl start perfsonar-psconfig-web-admin-auth.service
+
+systemctl restart httpd &> /dev/null || :
 
 %files
 %defattr(-,perfsonar,perfsonar,-)
