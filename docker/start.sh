@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cp -f /app/docker/sbin/pwa_auth /usr/sbin/pwa_auth
+
 #This script is used inside the docker container to start api and ui(via http-server)
 
 if [ ! -f /app/api/config/auth.key ]; then

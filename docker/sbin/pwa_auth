@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export NODE_PATH=/app/node_modules
+/usr/local/bin/node /app/bin/auth.js "$@"
