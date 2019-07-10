@@ -46,6 +46,8 @@ auth:
 	rpmbuild -bs perfsonar-psconfig-web-admin-auth.spec
 	rpmbuild -ba perfsonar-psconfig-web-admin-auth.spec
 
+clean_all: clean npm
+
 clean:
 	rm -f perfsonar-psconfig*.tar.gz
 	rm -rf ~/rpmbuild/RPMS/x86_64/perfsonar-psconfig-web-admin-auth*.rpm ~/rpmbuild/BUILD/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/BUILDROOT/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SOURCES/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SRPMS/perfsonar-psconfig-web-admin-auth* ~/rpmbuild/SPECS/perfsonar-psconfig-web-admin-auth/*
