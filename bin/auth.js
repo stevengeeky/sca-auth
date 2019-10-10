@@ -21,22 +21,33 @@ var db = require('../api/models');
 const shortListCols = [ "id", "active", "username", "email", "fullname" ];
 
 switch(argv._[0]) {
-case "modscope": modscope(); break;
-case "listuser": listuser(); break;
-case "issue": issue(); break;
-case "setpass": setpass(); break;
-case "useradd": useradd(); break;
-case "userdel": userdel(); break;
-default:
-    console.log(fs.readFileSync(__dirname+"/usage.txt", {encoding: "utf8"})); 
+    case "modscope": modscope(); break;
+    case "listuser": listuser(); break;
+    case "issue": issue(); break;
+    case "setpass": setpass(); break;
+    case "useradd": useradd(); break;
+    case "userdel": userdel(); break;
+    default:
+        console.log(fs.readFileSync(__dirname+"/usage.txt", {encoding: "utf8"})); 
+        break;
 }
 
 function listuser() {
     db.User.findAll({/*attributes: ['id', 'username', 'email', 'active', 'scopes', 'times', 'createdAt'],*/ raw: true})
     .then(function(users) {
             //console.dir(users);
+            var compact = argv.compact;
             if ( ! argv.short ) {
-                console.dir(users);
+                //console.dir(users);
+                //console.log("typeof users", typeof users);
+                //console.log("users value\n");
+                //console.log( users );
+                //console.log("\n");
+                if ( !compact ) {
+                    console.log( JSON.stringify( users, null, "   " ) );
+                } else {
+                    console.log( JSON.stringify( users ) );
+                }
             } else {
                 console.log( shortListCols.join("\t") );
                 //console.log(columns);
@@ -53,7 +64,8 @@ function listuser() {
 
     function issue() {
         if(!argv.scopes || argv.sub === undefined) {
-            logger.error("./auth.js issue --scopes '{common: [\"user\"]}' --sub 'my_service' [--exp 1514764800]  [--out token.jwt] [--key test.key]");
+
+            logger.error("pwa_auth issue --scopes '{common: [\"user\"]}' --sub 'my_service' [--exp 1514764800]  [--out token.jwt] [--key test.key]");
             process.exit(1);
         }
 
