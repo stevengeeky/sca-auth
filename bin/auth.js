@@ -14,6 +14,7 @@ var winston = require('winston');
 var jwt = require('jsonwebtoken');
 var fs = require('fs');
 var _ = require('underscore');
+const readlineSync = require('readline-sync');
 
 var logger = new winston.Logger(config.logger.winston);
 var db = require('../api/models');
@@ -35,14 +36,8 @@ switch(argv._[0]) {
 function listuser() {
     db.User.findAll({/*attributes: ['id', 'username', 'email', 'active', 'scopes', 'times', 'createdAt'],*/ raw: true})
     .then(function(users) {
-            //console.dir(users);
             var compact = argv.compact;
             if ( ! argv.short ) {
-                //console.dir(users);
-                //console.log("typeof users", typeof users);
-                //console.log("users value\n");
-                //console.log( users );
-                //console.log("\n");
                 if ( !compact ) {
                     console.log( JSON.stringify( users, null, "   " ) );
                 } else {
@@ -50,7 +45,6 @@ function listuser() {
                 }
             } else {
                 console.log( shortListCols.join("\t") );
-                //console.log(columns);
                 _.map(users, function(user) {
                     var row = [];
                     _.each( shortListCols, function(col) {
@@ -172,6 +166,7 @@ function listuser() {
     }
 
     function setpass() {
+        console.log("argv", argv);
         if(!argv.username && !argv.id) {
             logger.error("please specify --username <username> or --id <userid>");
             process.exit(1);
@@ -188,7 +183,30 @@ function listuser() {
             ]}
         }).then(function(user) {
             if(!user) return logger.error("can't find user:"+argv.username);
-            user.setPassword(argv.password, function(err) {
+            var newPassword = argv.password;
+            if ( newPassword === true ) {
+                var confirmPassword;
+                while (confirmPassword != newPassword ) {
+                    newPassword = readlineSync.question('Please enter new password: ', {
+                        hideEchoBack: true // The typed text on screen is hidden by `*` (default).
+                    });
+                    confirmPassword = readlineSync.question('Please confirm new password: ', {
+                        hideEchoBack: true // The typed text on screen is hidden by `*` (default).
+                    });
+                    if ( newPassword != confirmPassword ) {
+                        console.log("passwords don't match; try again");
+                    }
+                }
+                if ( newPassword == confirmPassword && newPassword != "" ) {
+                    console.log("updating password");
+                } else {
+                    return logger.error("error updating password for user "+user.username + "; password must not be empty.");
+
+                }
+
+            }
+
+            user.setPassword(newPassword, function(err) {
                 if(err) throw err;
                 user.save().then(function() {
                     logger.log("successfully updated password");

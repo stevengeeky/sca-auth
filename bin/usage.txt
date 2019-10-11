@@ -1,9 +1,12 @@
 Usage: 
 
-* List Users
+* List User (JSON)
 pwa_auth listuser 
 
-* Short Listing
+* List User (Compact JSON, all on one line)
+pwa_auth listuser --compact
+
+* Short Listing (table)
 pwa_auth listuser --short
 
 * register new user
@@ -14,7 +17,7 @@ pwa_auth issue --scopes '{"sca": ["user"] }' --sub 'test_service' [--out test.jw
 
 pwa_auth issue --scopes '{"sca": ["user","admin"]}' --profile '{"fullname": "Soichi Hayashi (forever)", "email": "hayashis@iu.edu"}' --sub '1' --exp 1514764800
 
-* Reset password
+* Reset password (use --password without a password to be prompted interactively)
 pwa_auth setpass --username hayashis [or --id 123] --password "password#123"
 
 * Modify (set/add/del) user scopes
