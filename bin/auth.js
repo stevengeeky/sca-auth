@@ -27,6 +27,7 @@ switch(argv._[0]) {
     case "issue": issue(); break;
     case "setpass": setpass(); break;
     case "useradd": useradd(); break;
+    case "usermod": usermod(); break;
     case "userdel": userdel(); break;
     default:
         console.log(fs.readFileSync(__dirname+"/usage.txt", {encoding: "utf8"})); 
