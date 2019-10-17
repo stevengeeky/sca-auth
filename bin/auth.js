@@ -218,6 +218,72 @@ function listuser() {
         })
     }
 
+    function usermod() {
+        var updateFields = {};
+        if(!argv.id) {
+            logger.error("You must specify a user id to modify, like this: --id <userid>");
+            process.exit(1);
+        }
+
+        if(argv.username && argv.username !== true) {
+            logger.info("New username specified: " + argv.username);
+            updateFields.username = argv.username;
+        }
+        if(argv.email && argv.email !== true) {
+            logger.info("New email specified: " + argv.email);
+            updateFields.email = argv.email;
+        }
+        if(argv.fullname && argv.fullname !== true) {
+            logger.info("New fullname specified: " + argv.fullname);
+            updateFields.fullname = argv.fullname;
+        }
+        var uniqueFieldChecks = {
+            username: argv.username,
+            email: argv.email
+        };
+        var userExists = false;
+            // make sure the user exists
+            db.User.findOne({where: 
+                {id: argv.id}
+            }).then(function(user) {
+                if(!user) return logger.error("can't find user:"+argv.id);
+                if ( user.username == argv.username ) delete uniqueFieldChecks.username;
+                if ( user.email == argv.email ) delete uniqueFieldChecks.email;
+            console.log("uniqueFieldChecks", uniqueFieldChecks);
+        db.User.findOne({where: { 
+            $or: [
+                uniqueFieldChecks
+            ]} 
+        }).then(function(user) {
+            console.log("prevent duplicate user", user);
+            if ( user ) userExists = true;
+
+            if ( userExists ) {
+                logger.error("Error: not updating user; username and email must be unique");
+                process.exit(1);
+            }
+
+            // make sure the user exists
+            db.User.findOne({where: 
+                {id: argv.id}
+            }).then(function(user) {
+                if(!user) return logger.error("can't find user:"+argv.id);
+                var newPassword = argv.password;
+            });
+
+            // update the values
+            db.User.update(
+                updateFields,
+                {where: {id: argv.id}
+                }).then(function(user) {
+                    console.log("Updated? user ", user);
+                });
+
+        });
+            });
+
+    }
+
     function useradd() {
         if(!argv.username) {
             logger.error("please specify --username <username>");
