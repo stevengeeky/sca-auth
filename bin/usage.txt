@@ -9,7 +9,7 @@ pwa_auth listuser --compact
 * Short Listing (table)
 pwa_auth listuser --short
 
-* register new user
+* Create new user (leave out --password to be prompted interactively)
 pwa_auth useradd --username hayashis --fullname "Soichi Hayashi" --email "hayashis@iu.edu" [--password "password4it"]
 
 * modify a user
@@ -20,7 +20,7 @@ pwa_auth issue --scopes '{"sca": ["user"] }' --sub 'test_service' [--out test.jw
 
 pwa_auth issue --scopes '{"sca": ["user","admin"]}' --profile '{"fullname": "Soichi Hayashi (forever)", "email": "hayashis@iu.edu"}' --sub '1' --exp 1514764800
 
-* Reset password (use --password without a password to be prompted interactively)
+* Reset password (leave out --password to be prompted interactively)
 pwa_auth setpass --username hayashis [or --id 123] --password "password#123"
 
 * Modify (set/add/del) user scopes
