@@ -242,45 +242,45 @@ function listuser() {
             email: argv.email
         };
         var userExists = false;
-            // make sure the user exists
-            db.User.findOne({where: 
-                {id: argv.id}
-            }).then(function(user) {
-                if(!user) return logger.error("can't find user:"+argv.id);
-                if ( user.username == argv.username ) delete uniqueFieldChecks.username;
-                if ( user.email == argv.email ) delete uniqueFieldChecks.email;
-            console.log("uniqueFieldChecks", uniqueFieldChecks);
-        db.User.findOne({where: { 
-            $or: [
-                uniqueFieldChecks
-            ]} 
+        // make sure the user exists
+        db.User.findOne({where: 
+            {id: argv.id}
         }).then(function(user) {
-            console.log("prevent duplicate user", user);
-            if ( user ) userExists = true;
-
-            if ( userExists ) {
-                logger.error("Error: not updating user; username and email must be unique");
-                process.exit(1);
-            }
-
-            // make sure the user exists
-            db.User.findOne({where: 
-                {id: argv.id}
+            if(!user) return logger.error("can't find user:"+argv.id);
+            if ( user.username == argv.username || argv.username == null ) delete uniqueFieldChecks.username;
+            if ( user.email == argv.email || argv.email == null ) delete uniqueFieldChecks.email;
+            console.log("uniqueFieldChecks", uniqueFieldChecks);
+            db.User.findOne({where: { 
+                $or: [
+                uniqueFieldChecks
+                ]} 
             }).then(function(user) {
-                if(!user) return logger.error("can't find user:"+argv.id);
-                var newPassword = argv.password;
-            });
+                console.log("prevent duplicate user");
+                if ( user ) userExists = true;
 
-            // update the values
-            db.User.update(
-                updateFields,
-                {where: {id: argv.id}
+                if ( userExists ) {
+                    logger.error("Error: not updating user; username and email must be unique");
+                    process.exit(1);
+                }
+
+                // make sure the user exists
+                db.User.findOne({where: 
+                    {id: argv.id}
                 }).then(function(user) {
-                    console.log("Updated? user ", user);
+                    if(!user) return logger.error("can't find user:"+argv.id);
+                    var newPassword = argv.password;
                 });
 
-        });
+                // update the values
+                db.User.update(
+                    updateFields,
+                    {where: {id: argv.id}
+                    }).then(function(user) {
+                        console.log("Updated? user ", user);
+                    });
+
             });
+        });
 
     }
 
