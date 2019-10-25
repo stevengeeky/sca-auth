@@ -182,13 +182,8 @@ function listuser() {
     }
 
     function setpass() {
-        console.log("argv", argv);
         if(!argv.username && !argv.id) {
             logger.error("please specify --username <username> or --id <userid>");
-            process.exit(1);
-        }
-        if(!argv.password) {
-            logger.error("please specify --password <password>");
             process.exit(1);
         }
 
@@ -200,6 +195,10 @@ function listuser() {
         }).then(function(user) {
             if(!user) return logger.error("can't find user:"+argv.username);
             var newPassword = argv.password;
+            if ( typeof newPassword == "undefined" ) {
+                // 'true' indicates we should prompt user for password
+                newPassword = true;
+            }
             if ( newPassword === true ) {
                 var confirmPassword;
                 while (confirmPassword != newPassword ) {
@@ -233,6 +232,72 @@ function listuser() {
         })
     }
 
+    function usermod() {
+        var updateFields = {};
+        if(!argv.id) {
+            logger.error("You must specify a user id to modify, like this: --id <userid>");
+            process.exit(1);
+        }
+
+        if(argv.username && argv.username !== true) {
+            logger.info("New username specified: " + argv.username);
+            updateFields.username = argv.username;
+        }
+        if(argv.email && argv.email !== true) {
+            logger.info("New email specified: " + argv.email);
+            updateFields.email = argv.email;
+        }
+        if(argv.fullname && argv.fullname !== true) {
+            logger.info("New fullname specified: " + argv.fullname);
+            updateFields.fullname = argv.fullname;
+        }
+        var uniqueFieldChecks = {
+            username: argv.username,
+            email: argv.email
+        };
+        var userExists = false;
+        // make sure the user exists
+        db.User.findOne({where: 
+            {id: argv.id}
+        }).then(function(user) {
+            if(!user) return logger.error("can't find user:"+argv.id);
+            if ( user.username == argv.username || argv.username == null ) delete uniqueFieldChecks.username;
+            if ( user.email == argv.email || argv.email == null ) delete uniqueFieldChecks.email;
+            //console.log("uniqueFieldChecks", uniqueFieldChecks);
+            db.User.findOne({where: { 
+                $or: [
+                uniqueFieldChecks
+                ]} 
+            }).then(function(user) {
+                //console.log("prevent duplicate user");
+                if ( user ) userExists = true;
+
+                if ( userExists ) {
+                    logger.error("Error: not updating user; username and email must be unique");
+                    process.exit(1);
+                }
+
+                // make sure the user exists
+                db.User.findOne({where: 
+                    {id: argv.id}
+                }).then(function(user) {
+                    if(!user) return logger.error("can't find user:"+argv.id);
+                    var newPassword = argv.password;
+                });
+
+                // update the values
+                db.User.update(
+                    updateFields,
+                    {where: {id: argv.id}
+                    }).then(function(user) {
+                        console.log("Updated user ");
+                    });
+
+            });
+        });
+
+    }
+
     function useradd() {
         if(!argv.username) {
             logger.error("please specify --username <username>");
@@ -260,7 +325,7 @@ function listuser() {
             if ( user ) userExists = true;
 
             if ( userExists ) {
-                logger.error("username and email must be unique");
+                logger.error("User already exists; username and email must be unique");
                 process.exit(1);
             }
 
