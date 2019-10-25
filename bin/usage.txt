@@ -1,16 +1,16 @@
-Usage: 
+Usage:
 
 * List all Users (JSON)
-pwa_auth listuser 
+pwa_auth listuser
 
 * List User (Compact JSON, all on one line)
 pwa_auth listuser --compact
 
 * Short Listing (table)
-pwa_auth listuser --short  
+pwa_auth listuser --short
 
 * List individual users (--short works as well)
-pwa_auth listuser --id 123 [--username foo] [--email foo@example.com]
+pwa_auth listuser [--id 123] [--username foo] [--email foo@example.com]
 
 * register new user
 pwa_auth useradd --username hayashis --fullname "Soichi Hayashi" --email "hayashis@iu.edu" [--password "password4it"]

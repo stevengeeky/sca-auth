@@ -41,14 +41,17 @@ function listuser() {
 		$or: [
 		    {id: argv.id},
 		    {username: argv.username},
-		    {email: argv.email},		    
+		    {email: argv.email},
 		]},raw: true}
     } else {
 	condition = {raw: true}
-    } 
-    
+    }
+
     db.User.findAll(condition)
-	.then(function(users) {
+        .then(function(users) {
+            if ( users.length < 1) {
+                console.error("No users found");
+            }
             var compact = argv.compact;
             if ( ! argv.short ) {
                 if ( !compact ) {
