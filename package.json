@@ -21,7 +21,7 @@
     "jsonwebtoken": "^8.3.0",
     "nocache": "^2.0.0",
     "node-uuid": "^1.4.8",
-    "nodemailer": "^4.6.7",
+    "nodemailer": "^6.4.16",
     "optimist": "^0.6.1",
     "passport": "^0.4.0",
     "passport-facebook": "^2.1.1",
